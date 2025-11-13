@@ -1,0 +1,28 @@
+# Node / Vite
+node_modules/
+.vite/
+dist/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env / local
+.env
+.env.*
+
+# IDE
+.idea/
+.vscode/
+
+# Test coverage
+coverage/
+
+# Trae AI/Temp
+.trae/

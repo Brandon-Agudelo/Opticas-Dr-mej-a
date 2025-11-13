@@ -1,0 +1,237 @@
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Óptica</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/styles.css?v=20251111" />
+    <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  </head>
+  <body class="theme">
+    <div class="app-layout">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <div class="logo">👓</div>
+          <span>optica</span>
+        </div>
+        <nav class="menu">
+          <a class="menu-item active" href="dashboard.html" data-section="resumen" data-roles="admin,assistant,provider"><span class="icon"><iconify-icon icon="ph:house"></iconify-icon></span><span>Resumen</span></a>
+          <a class="menu-item" href="patients.html" data-section="pacientes" data-roles="admin,assistant"><span class="icon"><iconify-icon icon="ph:users"></iconify-icon></span><span>Pacientes</span></a>
+          <a class="menu-item" href="dashboard.html#proveedores" data-section="proveedores" data-roles="admin,assistant"><span class="icon"><iconify-icon icon="ph:factory"></iconify-icon></span><span>Proveedores</span></a>
+          <a class="menu-item" href="dashboard.html#ordenes" data-section="ordenes" data-roles="admin,assistant,provider"><span class="icon"><iconify-icon icon="ph:file"></iconify-icon></span><span>Órdenes</span></a>
+          <a class="menu-item" href="dashboard.html#pagos" data-section="pagos" data-roles="admin,assistant"><span class="icon"><iconify-icon icon="ph:credit-card"></iconify-icon></span><span>Pagos</span></a>
+          <a class="menu-item" href="dashboard.html#pendientes" data-section="pendientes" data-roles="admin,assistant,provider"><span class="icon"><iconify-icon icon="ph:hourglass"></iconify-icon></span><span>Pendientes</span></a>
+          <a class="menu-item" href="dashboard.html#reportes" data-section="reportes" data-roles="admin,assistant"><span class="icon"><iconify-icon icon="ph:chart-bar"></iconify-icon></span><span>Reportes</span></a>
+          <a class="menu-item" href="dashboard.html#notificaciones" data-section="notificaciones" data-roles="admin,assistant,provider"><span class="icon"><iconify-icon icon="ph:bell"></iconify-icon></span><span>Notificaciones</span></a>
+        </nav>
+      </aside>
+      <!-- Scrim/Overlay for mobile focus when sidebar está expandido -->
+      <div id="appScrim" class="app-scrim" aria-hidden="true"></div>
+
+      <div class="content">
+        <header class="topbar">
+          <button id="toggleSidebar" class="btn-outline topbar-toggle" aria-label="Alternar menú">
+            <iconify-icon icon="ph:list"></iconify-icon>
+          </button>
+          <div class="search">
+            <input type="search" placeholder="Buscar pacientes, órdenes…" />
+          </div>
+          <div class="topbar-actions">
+            <select id="roleSelector" title="Rol">
+              <option value="assistant">Asistente</option>
+              <option value="admin">Administrador</option>
+              <option value="provider">Proveedor</option>
+            </select>
+            <button id="resetDemoBtn" class="btn-outline" title="Inicializar datos demo">Inicializar demo</button>
+            <button id="logoutBtn" class="btn-outline">Cerrar sesión</button>
+          </div>
+        </header>
+
+        <main class="main" id="main">
+          <section class="panel" data-section="resumen" data-roles="admin,assistant,provider">
+            <div class="dashboard-grid">
+              <div class="card">
+                <h3>Órdenes enviadas</h3>
+                <p class="kpi" id="kpiOrdenesEnviadas">0</p>
+                <span class="kpi-sub">Totales</span>
+              </div>
+              <div class="card">
+                <h3>Pendientes por devolver</h3>
+                <p class="kpi" id="kpiPendientes">0</p>
+                <span class="kpi-sub">Proveedor → Óptica</span>
+              </div>
+              <div class="card">
+                <h3>Pagos pendientes</h3>
+                <p class="kpi" id="kpiPagosPendientes">0</p>
+                <span class="kpi-sub">Órdenes sin pago</span>
+              </div>
+              <div class="card">
+                <h3>Estado de órdenes</h3>
+                <canvas id="chartEstadosCanvas" height="140"></canvas>
+              </div>
+              <div class="card">
+                <h3>Flujo de pagos (últimos 7 días)</h3>
+                <canvas id="chartPagosCanvas" height="140"></canvas>
+              </div>
+            </div>
+          </section>
+          <!-- Panel: Proveedores -->
+          <section class="panel" data-section="proveedores" data-roles="admin,assistant" hidden>
+            <div class="panel-header">
+              <h2>Proveedores</h2>
+              <button class="btn-primary" data-roles="admin,assistant" id="btnNuevoProveedor">Registrar proveedor</button>
+            </div>
+            <div class="tabs">
+              <a href="#" class="tab active" data-target="#listaProveedores">Listado</a>
+              <a href="#" class="tab" data-target="#formProveedor" data-roles="admin,assistant">Registrar</a>
+            </div>
+            <form id="formProveedor" class="form" data-roles="admin,assistant" hidden>
+              <div class="field"><label>Nombre</label><input id="provNombre" required /><small class="hint" id="provNombreHint"></small></div>
+              <div class="field"><label>Contacto</label><input id="provContacto" placeholder="correo o teléfono" /><small class="hint" id="provContactoHint"></small></div>
+              <div class="field"><label>Notas</label><input id="provNotas" /><small class="hint" id="provNotasHint"></small></div>
+              <div style="display:flex; gap:8px;">
+                <button class="btn-primary" type="submit">Guardar proveedor</button>
+                <button class="btn-outline" type="button" id="cancelProveedor">Cancelar</button>
+              </div>
+            </form>
+            <div class="table" id="listaProveedores"></div>
+          </section>
+          <!-- Panel: Órdenes -->
+          <section class="panel" data-section="ordenes" data-roles="admin,assistant,provider" hidden>
+            <div class="panel-header">
+              <h2>Órdenes</h2>
+              <button class="btn-primary" data-roles="admin,assistant" id="btnNuevaOrden">Crear orden</button>
+            </div>
+            <div class="tabs">
+              <a href="#" class="tab active" data-target="#listaOrdenes">Listado</a>
+              <a href="#" class="tab" data-target="#formOrden" data-roles="admin,assistant">Registrar</a>
+            </div>
+            <form id="formOrden" class="form" data-roles="admin,assistant" hidden>
+              <div class="field"><label>Paciente</label><input id="ordPaciente" required /><small class="hint" id="ordPacienteHint"></small></div>
+              <div class="field"><label>Proveedor</label>
+                <select id="ordProveedor" required></select>
+                <small class="hint" id="ordProveedorHint"></small>
+              </div>
+              <div class="field"><label>Fórmula OD</label><input id="ordFormulaOD" placeholder="-2.00" /><small class="hint" id="ordFormulaODHint"></small></div>
+              <div class="field"><label>Fórmula OI</label><input id="ordFormulaOI" placeholder="-1.75" /><small class="hint" id="ordFormulaOIHint"></small></div>
+              <div class="field"><label>Notas</label><input id="ordNotas" /><small class="hint" id="ordNotasHint"></small></div>
+              <div style="display:flex; gap:8px;">
+                <button class="btn-primary" type="submit">Guardar orden</button>
+                <button class="btn-outline" type="button" id="cancelOrden">Cancelar</button>
+              </div>
+            </form>
+            <div class="table" id="listaOrdenes"></div>
+          </section>
+          <!-- Panel: Pagos -->
+          <section class="panel" data-section="pagos" data-roles="admin,assistant" hidden>
+            <div class="panel-header">
+              <h2>Pagos</h2>
+              <button class="btn-primary" data-roles="admin,assistant" id="btnNuevoPago">Registrar pago</button>
+            </div>
+            <div class="tabs">
+              <a href="#" class="tab active" data-target="#listaPagos">Listado</a>
+              <a href="#" class="tab" data-target="#formPago" data-roles="admin,assistant">Registrar</a>
+            </div>
+            <form id="formPago" class="form" data-roles="admin,assistant" hidden>
+              <div class="field"><label>Orden</label>
+                <select id="pagoOrden" required></select>
+                <small class="hint" id="pagoOrdenHint"></small>
+              </div>
+              <div class="field"><label>Monto</label><input id="pagoMonto" type="number" step="0.01" min="0" required /><small class="hint" id="pagoMontoHint"></small></div>
+              <div class="field"><label>Comprobante</label><input id="pagoComprobante" placeholder="Nº recibo / ref." /><small class="hint" id="pagoComprobanteHint"></small></div>
+              <div style="display:flex; gap:8px;">
+                <button class="btn-primary" type="submit">Guardar pago</button>
+                <button class="btn-outline" type="button" id="cancelPago">Cancelar</button>
+              </div>
+            </form>
+            <div class="table" id="listaPagos"></div>
+          </section>
+          <!-- Panel: Reportes -->
+          <section class="panel" data-section="reportes" data-roles="admin,assistant" hidden>
+            <div class="panel-header">
+              <h2>Reportes</h2>
+            </div>
+            <div class="filters" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:end;">
+              <div class="field"><label>Desde</label><input type="date" id="reporteDesde" /></div>
+              <div class="field"><label>Hasta</label><input type="date" id="reporteHasta" /></div>
+              <div class="field"><label>Proveedor</label><select id="reporteProveedor"><option value="">Todos</option></select></div>
+              <div>
+                <button class="btn-primary" id="btnGenerarReporte">Generar reporte</button>
+                <button class="btn-outline" id="btnLimpiarReporte">Limpiar</button>
+              </div>
+            </div>
+            <div id="resumenReporte" class="kpi-grid" style="margin-top:16px"></div>
+            <div class="dashboard-grid" style="margin-top:16px;">
+              <div class="card">
+                <h3>Pagos por día (rango)</h3>
+                <canvas id="chartReportPagosCanvas" height="140"></canvas>
+              </div>
+              <div class="card">
+                <h3>Estados de órdenes (rango)</h3>
+                <canvas id="chartReportEstadosCanvas" height="140"></canvas>
+              </div>
+            </div>
+            <div class="panel-subheader" style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+              <h3>Pagos filtrados</h3>
+              <button class="btn-outline" id="exportPagosCSV">Exportar CSV</button>
+            </div>
+            <div class="table" id="tablaPagosReporte"></div>
+            <div class="panel-subheader" style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;">
+              <h3>Órdenes filtradas</h3>
+              <button class="btn-outline" id="exportOrdenesCSV">Exportar CSV</button>
+            </div>
+            <div class="table" id="tablaOrdenesReporte"></div>
+          </section>
+          <!-- Panel: Notificaciones -->
+          <section class="panel" data-section="notificaciones" data-roles="admin,assistant,provider" hidden>
+            <div class="panel-header">
+              <h2>Notificaciones</h2>
+            </div>
+            <div class="tabs">
+              <a href="#" class="tab active" data-target="#listaNotificaciones">Listado</a>
+            </div>
+            <div class="table" id="listaNotificaciones"></div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <!-- Fallback de inicialización: si los scripts no cargan, evita pantalla en blanco -->
+    <div id="bootFallback" class="empty" hidden style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.9);z-index:9999;">
+      <div class="card" style="max-width:520px;">
+        <h3>Estamos teniendo problemas para cargar el panel</h3>
+        <p>Prueba:
+          <br>• Recargar con caché deshabilitada (Ctrl+Shift+R)
+          <br>• Abrir en modo incógnito
+          <br>• Deshabilitar extensiones que inyectan contenido
+        </p>
+      </div>
+    </div>
+    <script>
+      (function(){
+        // Si en ~1.2s no se marcó la bandera de init, muestra fallback
+        const t = setTimeout(function(){
+          if (!window.__appInitDone) {
+            var el = document.getElementById('bootFallback');
+            if (el) el.removeAttribute('hidden');
+          }
+        }, 1200);
+        window.addEventListener('load', function(){
+          if (window.__appInitDone) {
+            var el = document.getElementById('bootFallback');
+            if (el) el.setAttribute('hidden','');
+            clearTimeout(t);
+          }
+        });
+      })();
+    </script>
+
+    <script src="assets/js/auth.js?v=20251111" defer></script>
+    <script src="assets/js/dashboard.js?v=20251111" defer></script>    
+  </body>
+</html>

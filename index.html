@@ -1,0 +1,76 @@
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Óptica — Iniciar Sesión</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body class="theme">
+    <main class="auth-layout">
+      <section class="auth-card">
+        <div class="brand">
+          <div class="logo">👓</div>
+          <div class="brand-text">
+            <h1 class="brand-title">Óptica</h1>
+            <p class="brand-subtitle">Gestión</p>
+          </div>
+        </div>
+
+        <form id="loginForm" class="form">
+          <h2 class="form-title">Iniciar sesión</h2>
+          <p class="form-desc">Accede al panel para gestionar pacientes, citas e inventario.</p>
+
+          <div class="field">
+            <label for="email">Correo electrónico</label>
+            <input id="email" name="email" type="email" placeholder="tu@optica.com" required />
+            <small class="hint" id="emailHint"></small>
+          </div>
+
+          <div class="field">
+            <label for="password">Contraseña</label>
+            <div class="password-wrapper">
+              <input id="password" name="password" type="password" placeholder="••••••••" required minlength="6" />
+              <button type="button" class="toggle-password" aria-label="Mostrar u ocultar contraseña">👁️</button>
+            </div>
+            <small class="hint" id="passwordHint"></small>
+          </div>
+
+          <div class="field">
+            <label for="role">Rol</label>
+            <select id="role" name="role" required>
+              <option value="assistant">Asistente (Óptica)</option>
+              <option value="admin">Administrador</option>
+              <option value="provider">Proveedor</option>
+            </select>
+            <small class="hint" id="roleHint"></small>
+          </div>
+
+          <div class="actions-row">
+            <label class="checkbox">
+              <input type="checkbox" id="remember" />
+              <span>Recordarme</span>
+            </label>
+            <a class="link" href="#" aria-disabled="true">¿Olvidaste tu contraseña?</a>
+          </div>
+
+          <button type="submit" class="btn-primary">Entrar</button>
+
+          <p id="errorMsg" class="error" role="alert" aria-live="polite" hidden></p>
+        </form>
+      </section>
+      <section class="auth-aside">
+        <div class="aside-content">
+          <h3>Atención de calidad</h3>
+          <p>Agenda citas, registra recetas, controla lentes y accesorios, y da seguimiento a tus pacientes desde un solo lugar.</p>
+        </div>
+      </section>
+    </main>
+
+    <script src="assets/js/auth.js" defer></script>
+  </body>
+</html>
