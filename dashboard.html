@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Óptica</title>
+    <title>Ópticas Dr. Mejía</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -16,8 +16,8 @@
     <div class="app-layout">
       <aside class="sidebar">
         <div class="sidebar-brand">
-          <div class="logo">👓</div>
-          <span>optica</span>
+          <img src="assets/img/logo.png" alt="Ópticas Dr. Mejía" class="logo-img" />
+          <span></span>
         </div>
         <nav class="menu">
           <a class="menu-item active" href="dashboard.html" data-section="resumen" data-roles="admin,assistant,provider"><span class="icon"><iconify-icon icon="ph:house"></iconify-icon></span><span>Resumen</span></a>
@@ -38,11 +38,11 @@
           <button id="toggleSidebar" class="btn-outline topbar-toggle" aria-label="Alternar menú">
             <iconify-icon icon="ph:list"></iconify-icon>
           </button>
-          <div class="search">
-            <input type="search" placeholder="Buscar pacientes, órdenes…" />
-          </div>
+          <a href="dashboard.html" class="topbar-brand" aria-label="Inicio">
+            <img src="assets/img/logo.png" alt="Ópticas Dr. Mejía" class="logo-img logo-topbar" />
+          </a>
           <div class="topbar-actions">
-            <select id="roleSelector" title="Rol">
+            <select id="roleSelector" title="Rol" hidden>
               <option value="assistant">Asistente</option>
               <option value="admin">Administrador</option>
               <option value="provider">Proveedor</option>
@@ -86,6 +86,19 @@
               <h2>Proveedores</h2>
               <button class="btn-primary" data-roles="admin,assistant" id="btnNuevoProveedor">Registrar proveedor</button>
             </div>
+            <div class="filters">
+              <div class="field">
+                <label>Búsqueda nombre</label>
+                <input id="filtroProvNombre" type="text" placeholder="Nombre proveedor" />
+              </div>
+              <div class="field">
+                <label>Contacto</label>
+                <input id="filtroProvContacto" type="text" placeholder="correo o teléfono" />
+              </div>
+              <div class="field" style="align-self:flex-end;">
+                <button id="limpiarFiltrosProv" class="btn-outline btn-sm">Limpiar filtros</button>
+              </div>
+            </div>
             <div class="tabs">
               <a href="#" class="tab active" data-target="#listaProveedores">Listado</a>
               <a href="#" class="tab" data-target="#formProveedor" data-roles="admin,assistant">Registrar</a>
@@ -107,6 +120,36 @@
               <h2>Órdenes</h2>
               <button class="btn-primary" data-roles="admin,assistant" id="btnNuevaOrden">Crear orden</button>
             </div>
+            <div class="filters">
+              <div class="field">
+                <label>Búsqueda paciente</label>
+                <input id="filtroOrdenPaciente" type="text" placeholder="Nombre paciente" />
+              </div>
+              <div class="field">
+                <label>Proveedor</label>
+                <select id="filtroOrdenProveedor">
+                  <option value="">Todos</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Estado</label>
+                <select id="filtroOrdenEstado">
+                  <option value="">Todos</option>
+                  <option value="pendiente">Pendiente</option>
+                  <option value="enviada">Enviada</option>
+                  <option value="en_proceso">En proceso</option>
+                  <option value="devuelta">Devuelta</option>
+                  <option value="completada">Completada</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Fecha</label>
+                <input id="filtroOrdenFecha" type="date" />
+              </div>
+              <div class="field" style="align-self:flex-end;">
+                <button id="limpiarFiltrosOrden" class="btn-outline btn-sm">Limpiar filtros</button>
+              </div>
+            </div>
             <div class="tabs">
               <a href="#" class="tab active" data-target="#listaOrdenes">Listado</a>
               <a href="#" class="tab" data-target="#formOrden" data-roles="admin,assistant">Registrar</a>
@@ -126,6 +169,8 @@
               </div>
             </form>
             <div class="table" id="listaOrdenes"></div>
+            <div id="ordenDetailsHost" hidden></div>
+            <div id="ordenDetailsHost" hidden></div>
           </section>
           <!-- Panel: Pagos -->
           <section class="panel" data-section="pagos" data-roles="admin,assistant" hidden>
@@ -151,16 +196,33 @@
             </form>
             <div class="table" id="listaPagos"></div>
           </section>
+          <!-- Panel: Pendientes -->
+          <section class="panel" data-section="pendientes" data-roles="admin,assistant,provider" hidden>
+            <div class="panel-header">
+              <h2>Órdenes pendientes</h2>
+            </div>
+            <div class="filters">
+              <div class="field">
+                <label>Mostrar</label>
+                <select id="pendientesFiltro">
+                  <option value="sin_pagar">Solo sin pagar</option>
+                  <option value="todas">Todas</option>
+                </select>
+              </div>
+            </div>
+            <div class="table" id="listaPendientes"></div>
+          </section>
+
           <!-- Panel: Reportes -->
           <section class="panel" data-section="reportes" data-roles="admin,assistant" hidden>
             <div class="panel-header">
               <h2>Reportes</h2>
             </div>
-            <div class="filters" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:end;">
+            <div class="filters date-filters">
               <div class="field"><label>Desde</label><input type="date" id="reporteDesde" /></div>
               <div class="field"><label>Hasta</label><input type="date" id="reporteHasta" /></div>
               <div class="field"><label>Proveedor</label><select id="reporteProveedor"><option value="">Todos</option></select></div>
-              <div>
+              <div class="field field-actions">
                 <button class="btn-primary" id="btnGenerarReporte">Generar reporte</button>
                 <button class="btn-outline" id="btnLimpiarReporte">Limpiar</button>
               </div>

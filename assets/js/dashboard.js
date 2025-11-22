@@ -377,21 +377,264 @@
     });
   }
 
+  function openOrdenDetails(o) {
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed'; overlay.style.inset = '0'; overlay.style.background = 'rgba(0,0,0,0.35)'; overlay.style.zIndex = '1000';
+    const modal = document.createElement('div');
+    modal.className = 'card';
+    modal.style.position = 'fixed'; modal.style.top = '50%'; modal.style.left = '50%'; modal.style.transform = 'translate(-50%, -50%)';
+    modal.style.width = 'min(700px, 92vw)'; modal.style.maxHeight = '85vh'; modal.style.overflow = 'auto'; modal.style.padding = '16px';
+    const monto = (data.pagos || []).filter(p => Number(p.ordenId) === Number(o.id)).reduce((s, p) => s + Number(p.monto || 0), 0);
+    modal.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <div>
+          <h3 style="margin:0;">Detalles de la orden</h3>
+          <div style="color:var(--c-text-light);font-size:13px;">Información completa</div>
+        </div>
+        <button class="btn-outline" id="closeOrdenModal" title="Cerrar"><iconify-icon icon="ph:x"></iconify-icon></button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+        <div><div style="color:var(--c-text-light);font-size:13px;">Número de orden</div><div>#${o.id}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Cliente</div><div>${o.paciente}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Proveedor</div><div>${providerNameById(o.proveedorId)}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Monto</div><div>$${monto.toFixed(2)}</div></div>
+      </div>
+      <div style="margin-top:12px;">
+        <h4 style="margin:8px 0;">Fórmula óptica</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;">
+            <div style="font-weight:600;">Ojo derecho (OD)</div>
+            <div style="color:var(--c-text-light);">${o.formulaOD || '-'}</div>
+          </div>
+          <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;">
+            <div style="font-weight:600;">Ojo izquierdo (OI)</div>
+            <div style="color:var(--c-text-light);">${o.formulaOI || '-'}</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <div style="color:var(--c-text-light);font-size:13px;">Descripción</div>
+        <div>${o.notas || 'Sin descripción'}</div>
+      </div>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    const closeBtn = modal.querySelector('#closeOrdenModal');
+    function close() { try { document.body.removeChild(overlay); } catch {} }
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  }
+
+  function openOrdenDetails(o) {
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed'; overlay.style.inset = '0'; overlay.style.background = 'rgba(0,0,0,0.35)'; overlay.style.zIndex = '1000';
+    const modal = document.createElement('div');
+    modal.className = 'card';
+    modal.style.position = 'fixed'; modal.style.top = '50%'; modal.style.left = '50%'; modal.style.transform = 'translate(-50%, -50%)';
+    modal.style.width = 'min(700px, 92vw)'; modal.style.maxHeight = '85vh'; modal.style.overflow = 'auto'; modal.style.padding = '16px';
+    const monto = (data.pagos || []).filter(p => Number(p.ordenId) === Number(o.id)).reduce((s, p) => s + Number(p.monto || 0), 0);
+    modal.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <div>
+          <h3 style="margin:0;">Detalles de la orden</h3>
+          <div style="color:var(--c-text-light);font-size:13px;">Información completa</div>
+        </div>
+        <button class="btn-outline" id="closeOrdenModal" title="Cerrar"><iconify-icon icon="ph:x"></iconify-icon></button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+        <div><div style="color:var(--c-text-light);font-size:13px;">Número de orden</div><div>#${o.id}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Cliente</div><div>${o.paciente}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Proveedor</div><div>${providerNameById(o.proveedorId)}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Monto</div><div>${monto.toFixed(2)}</div></div>
+      </div>
+      <div style="margin-top:12px;">
+        <h4 style="margin:8px 0;">Fórmula óptica</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;">
+            <div style="font-weight:600;">Ojo derecho (OD)</div>
+            <div style="color:var(--c-text-light);">${o.formulaOD || '-'}</div>
+          </div>
+          <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;">
+            <div style="font-weight:600;">Ojo izquierdo (OI)</div>
+            <div style="color:var(--c-text-light);">${o.formulaOI || '-'}</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <div style="color:var(--c-text-light);font-size:13px;">Descripción</div>
+        <div>${o.notas || 'Sin descripción'}</div>
+      </div>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    const closeBtn = modal.querySelector('#closeOrdenModal');
+    function close() { try { document.body.removeChild(overlay); } catch {} }
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  }
+
+  function openOrdenDetails(o) {
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.right = '0';
+    overlay.style.bottom = '0';
+    overlay.style.background = 'rgba(0,0,0,0.35)';
+    overlay.style.zIndex = '1000';
+    const modal = document.createElement('div');
+    modal.className = 'card';
+    modal.style.position = 'fixed';
+    modal.style.top = '50%';
+    modal.style.left = '50%';
+    modal.style.transform = 'translate(-50%, -50%)';
+    modal.style.width = 'min(700px, 92vw)';
+    modal.style.maxHeight = '85vh';
+    modal.style.overflow = 'auto';
+    modal.style.padding = '16px';
+    const monto = (data.pagos || []).filter(p => Number(p.ordenId) === Number(o.id)).reduce((s, p) => s + Number(p.monto || 0), 0);
+    modal.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <div>
+          <h3 style="margin:0;">Detalles de la orden</h3>
+          <div style="color:var(--c-text-light);font-size:13px;">Información completa de la orden de trabajo</div>
+        </div>
+        <button class="btn-outline" id="closeOrdenModal" title="Cerrar"><iconify-icon icon="ph:x"></iconify-icon></button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+        <div><div style="color:var(--c-text-light);font-size:13px;">Número de orden</div><div>#${o.id}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Cliente</div><div>${o.paciente}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Proveedor</div><div>${providerNameById(o.proveedorId)}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Monto</div><div>${monto.toFixed(2)}</div></div>
+      </div>
+      <div style="margin-top:12px;">
+        <h4 style="margin:8px 0;">Fórmula óptica</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;">
+            <div style="font-weight:600;">Ojo derecho (OD)</div>
+            <div style="color:var(--c-text-light);">${o.formulaOD || '-'}</div>
+          </div>
+          <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;">
+            <div style="font-weight:600;">Ojo izquierdo (OI)</div>
+            <div style="color:var(--c-text-light);">${o.formulaOI || '-'}</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <div style="color:var(--c-text-light);font-size:13px;">Descripción</div>
+        <div>${o.notas || 'Sin descripción'}</div>
+      </div>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    const closeBtn = modal.querySelector('#closeOrdenModal');
+    function close() { try { document.body.removeChild(overlay); } catch {} }
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  }
+
+  function openOrdenDetails(o) {
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.right = '0';
+    overlay.style.bottom = '0';
+    overlay.style.background = 'rgba(0,0,0,0.35)';
+    overlay.style.zIndex = '1000';
+    const modal = document.createElement('div');
+    modal.className = 'card';
+    modal.style.position = 'fixed';
+    modal.style.top = '50%';
+    modal.style.left = '50%';
+    modal.style.transform = 'translate(-50%, -50%)';
+    modal.style.width = 'min(700px, 92vw)';
+    modal.style.maxHeight = '85vh';
+    modal.style.overflow = 'auto';
+    modal.style.padding = '16px';
+    const monto = (data.pagos || []).filter(p => Number(p.ordenId) === Number(o.id)).reduce((s, p) => s + Number(p.monto || 0), 0);
+    modal.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <div>
+          <h3 style="margin:0;">Detalles de la orden</h3>
+          <div style="color:var(--c-text-light);font-size:13px;">Información completa de la orden de trabajo</div>
+        </div>
+        <button class="btn-outline" id="closeOrdenModal" title="Cerrar"><iconify-icon icon="ph:x"></iconify-icon></button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+        <div><div style="color:var(--c-text-light);font-size:13px;">Número de orden</div><div>#${o.id}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Cliente</div><div>${o.paciente}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Proveedor</div><div>${providerNameById(o.proveedorId)}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Monto</div><div>${monto.toFixed(2)}</div></div>
+      </div>
+      <div style="margin-top:12px;">
+        <h4 style="margin:8px 0;">Fórmula óptica</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;">
+            <div style="font-weight:600;">Ojo derecho (OD)</div>
+            <div style="color:var(--c-text-light);">${o.formulaOD || '-'}</div>
+          </div>
+          <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;">
+            <div style="font-weight:600;">Ojo izquierdo (OI)</div>
+            <div style="color:var(--c-text-light);">${o.formulaOI || '-'}</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <div style="color:var(--c-text-light);font-size:13px;">Descripción</div>
+        <div>${o.notas || 'Sin descripción'}</div>
+      </div>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    const closeBtn = modal.querySelector('#closeOrdenModal');
+    function close() { try { document.body.removeChild(overlay); } catch {} }
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  }
+
   function renderOrdenes() {
     if (!listaOrdenes) return;
+    // Cargar proveedores en select
+    const provSelect = document.getElementById('filtroOrdenProveedor');
+    if (provSelect && provSelect.children.length <= 1) {
+      data.proveedores.forEach(p => {
+        const opt = document.createElement('option'); opt.value = p.id; opt.textContent = p.nombre;
+        provSelect.appendChild(opt);
+      });
+    }
+    // Leer filtros
+    const paciente = document.getElementById('filtroOrdenPaciente')?.value.trim().toLowerCase() || '';
+    const proveedorId = document.getElementById('filtroOrdenProveedor')?.value || '';
+    const estado = document.getElementById('filtroOrdenEstado')?.value || '';
+    const fecha = document.getElementById('filtroOrdenFecha')?.value || '';
+    // Filtrar
+    let ordenes = data.ordenes.filter(o => {
+      if (paciente && !o.paciente.toLowerCase().includes(paciente)) return false;
+      if (proveedorId && o.proveedorId != proveedorId) return false;
+      if (estado && o.estado !== estado) return false;
+      if (fecha) {
+        const orderDate = new Date(o.fecha || 0).toISOString().slice(0,10);
+        if (orderDate !== fecha) return false;
+      }
+      return true;
+    });
+
     listaOrdenes.innerHTML = '';
     const head = document.createElement('div'); head.className = 'table-row table-head'; head.style.gridTemplateColumns = '1fr 1fr 1fr 1fr auto';
     head.innerHTML = '<div>Paciente</div><div>Proveedor</div><div>Estado</div><div>Pagada</div><div>Acciones</div>';
     listaOrdenes.appendChild(head);
-    if (!data.ordenes || data.ordenes.length === 0) {
-      const empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = 'No hay órdenes. Usa "Crear orden" para añadir la primera.';
+    if (ordenes.length === 0) {
+      const empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = 'No hay órdenes con esos filtros.';
       listaOrdenes.appendChild(empty);
     } else {
-      data.ordenes.forEach((o, idx) => {
+      ordenes.forEach((o, idx) => {
         const row = document.createElement('div'); row.className = 'table-row'; row.style.gridTemplateColumns = '1fr 1fr 1fr 1fr auto';
-        row.innerHTML = `<div>${o.paciente}</div><div>${providerNameById(o.proveedorId)}</div><div>${o.estado}</div><div>${o.pagada ? 'Sí' : 'No'}</div><div><button class="btn-outline" data-action="pay" data-idx="${idx}">${o.pagada ? 'Pagada' : 'Marcar pagada'}</button> <button class="btn-outline" data-action="del" data-idx="${idx}">Eliminar</button></div>`;
+        row.innerHTML = `<div>${o.paciente}</div><div>${providerNameById(o.proveedorId)}</div><div>${o.estado}</div><div>${o.pagada ? 'Sí' : 'No'}</div><div><button class="btn-outline" data-action="view" data-idx="${idx}" title="Ver detalles"><iconify-icon icon="ph:eye"></iconify-icon></button> <button class="btn-outline" data-action="pay" data-idx="${idx}">${o.pagada ? 'Pagada' : 'Marcar pagada'}</button> <button class="btn-outline" data-action="del" data-idx="${idx}">Eliminar</button></div>`;
+        const viewBtn = row.querySelector('button[data-action="view"]');
         const payBtn = row.querySelector('button[data-action="pay"]');
         const delBtn = row.querySelector('button[data-action="del"]');
+        if (viewBtn) viewBtn.addEventListener('click', () => { openOrdenDetails(o); });
         if (payBtn) payBtn.addEventListener('click', () => {
           if (o.pagada) return;
           data.ordenes[idx].pagada = true;
@@ -421,6 +664,19 @@
   function toggleOrdenForm(show) { if (ordPanel) activateTab(ordPanel, show ? '#formOrden' : '#listaOrdenes'); }
   function setOrdenTabPersist(show) { localStorage.setItem('tab_ordenes', show ? '#formOrden' : '#listaOrdenes'); }
   if (btnNuevaOrden) btnNuevaOrden.addEventListener('click', () => { toggleOrdenForm(true); setOrdenTabPersist(true); });
+  // Filtros órdenes
+  ['filtroOrdenPaciente','filtroOrdenProveedor','filtroOrdenEstado','filtroOrdenFecha'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', renderOrdenes);
+  });
+  const limpiarOrd = document.getElementById('limpiarFiltrosOrden');
+  if (limpiarOrd) limpiarOrd.addEventListener('click', () => {
+    ['filtroOrdenPaciente','filtroOrdenProveedor','filtroOrdenEstado','filtroOrdenFecha'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    renderOrdenes();
+  });
   if (cancelOrden) cancelOrden.addEventListener('click', () => { toggleOrdenForm(false); setOrdenTabPersist(false); });
   if (formOrden) formOrden.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -464,14 +720,24 @@
 
   function renderProveedores() {
     if (!listaProveedores) return;
+    // Leer filtros
+    const nombre = document.getElementById('filtroProvNombre')?.value.trim().toLowerCase() || '';
+    const contacto = document.getElementById('filtroProvContacto')?.value.trim().toLowerCase() || '';
+    // Filtrar
+    let proveedores = data.proveedores.filter(p => {
+      if (nombre && !p.nombre.toLowerCase().includes(nombre)) return false;
+      if (contacto && !(p.contacto || '').toLowerCase().includes(contacto)) return false;
+      return true;
+    });
+
     listaProveedores.innerHTML = '';
     const head = document.createElement('div'); head.className = 'table-row table-head'; head.innerHTML = '<div>Nombre</div><div>Contacto</div><div>Notas</div><div>Acciones</div>';
     listaProveedores.appendChild(head);
-    if (!data.proveedores || data.proveedores.length === 0) {
-      const empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = 'No hay proveedores. Usa "Registrar proveedor" para añadir el primero.';
+    if (proveedores.length === 0) {
+      const empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = 'No hay proveedores con esos filtros.';
       listaProveedores.appendChild(empty);
     } else {
-      data.proveedores.forEach((p, idx) => {
+      proveedores.forEach((p, idx) => {
         const row = document.createElement('div'); row.className = 'table-row';
         row.innerHTML = `<div>${p.nombre}</div><div>${p.contacto || ''}</div><div>${p.notas || ''}</div><div><button class="btn-outline" data-idx="${idx}">Eliminar</button></div>`;
         row.querySelector('button').addEventListener('click', () => {
@@ -502,6 +768,19 @@
   function toggleProveedorForm(show) { if (provPanel) activateTab(provPanel, show ? '#formProveedor' : '#listaProveedores'); }
   function setProveedorTabPersist(show) { localStorage.setItem('tab_proveedores', show ? '#formProveedor' : '#listaProveedores'); }
   if (btnNuevoProveedor) btnNuevoProveedor.addEventListener('click', () => { toggleProveedorForm(true); setProveedorTabPersist(true); });
+  // Filtros proveedores
+  ['filtroProvNombre','filtroProvContacto'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', renderProveedores);
+  });
+  const limpiarProv = document.getElementById('limpiarFiltrosProv');
+  if (limpiarProv) limpiarProv.addEventListener('click', () => {
+    ['filtroProvNombre','filtroProvContacto'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    renderProveedores();
+  });
   if (cancelProveedor) cancelProveedor.addEventListener('click', () => { toggleProveedorForm(false); setProveedorTabPersist(false); });
   if (formProveedor) formProveedor.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -861,8 +1140,98 @@
       a.toggleAttribute('hidden', !isAllowedForRole(a, role));
     });
   }
+
+  // ---------- Render Pendientes ----------
+  function renderPendientes() {
+    const filtro = document.getElementById('pendientesFiltro').value;
+    const host = document.getElementById('listaPendientes');
+    if (!host) return;
+    let ordenes = data.ordenes.filter(o => ['pendiente','enviada','en_proceso'].includes(o.estado));
+    if (filtro === 'sin_pagar') {
+      ordenes = ordenes.filter(o => !o.pagada);
+    }
+    if (ordenes.length === 0) {
+      host.innerHTML = '<div class="empty">No hay órdenes pendientes</div>';
+      return;
+    }
+    const rows = ordenes.map(o => {
+      const prov = data.proveedores.find(p => p.id === o.proveedorId) || {};
+      const pagoBadge = o.pagada
+        ? '<span class="badge badge-success">Pagada</span>'
+        : '<span class="badge badge-warning">Pendiente pago</span>';
+      return `<tr>
+        <td>${o.id}</td>
+        <td>${o.paciente}</td>
+        <td>${prov.nombre || '-'}</td>
+        <td><span class="badge">${o.estado}</span></td>
+        <td>${pagoBadge}</td>
+        <td>${new Date(o.fecha || Date.now()).toLocaleDateString()}</td>
+        <td>
+          ${!o.pagada ? `<button class="btn-outline btn-sm marcar-pagado" data-id="${o.id}">Marcar pagado</button>` : ''}
+        </td>
+      </tr>`;
+    }).join('');
+    host.innerHTML = `
+      <table class="table">
+        <thead>
+          <tr>
+            <th># Orden</th>
+            <th>Paciente</th>
+            <th>Proveedor</th>
+            <th>Estado</th>
+            <th>Pago</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+
+    // Delegación para botones marcar pagado
+    host.addEventListener('click', e => {
+      if (e.target.classList.contains('marcar-pagado')) {
+        const ordenId = parseInt(e.target.dataset.id, 10);
+        marcarOrdenPagada(ordenId);
+      }
+    });
+  }
+
+  function marcarOrdenPagada(ordenId) {
+    const orden = data.ordenes.find(o => o.id === ordenId);
+    if (!orden) return;
+    orden.pagada = true;
+    // Añadir registro de pago
+    const pagoId = (data.pagos.length ? Math.max(...data.pagos.map(p => p.id)) : 3000) + 1;
+    data.pagos.push({
+      id: pagoId,
+      ordenId: ordenId,
+      monto: 0, // se puede editar luego en el panel Pagos
+      comprobante: 'Pagado desde pendientes',
+      fecha: Date.now()
+    });
+    Store.save(data);
+    renderPendientes();
+    // Refrescar KPIs
+    updateKPIs();
+  }
+
+  // Conectar filtro
+  const pendientesFiltro = document.getElementById('pendientesFiltro');
+  if (pendientesFiltro) {
+    pendientesFiltro.addEventListener('change', renderPendientes);
+  }
+
+  // Llamar a renderPendientes cuando se active la sección
+  const originalSyncFromHash = syncFromHash;
+  syncFromHash = function() {
+    originalSyncFromHash();
+    if (window.location.hash === '#pendientes') {
+      renderPendientes();
+    }
+  };
   window.addEventListener('hashchange', syncFromHash);
   syncFromHash();
+
   // Señal: inicialización terminada
   window.__appInitDone = true;
 })();

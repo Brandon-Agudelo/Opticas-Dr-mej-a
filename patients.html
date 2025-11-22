@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Óptica</title>
+    <title>Ópticas Dr Mejia</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -15,7 +15,7 @@
       <aside class="sidebar">
         <div class="sidebar-brand">
           <div class="logo">👓</div>
-          <span>VisionPro</span>
+          <span>Opticas Dr Mejia</span>
         </div>
         <nav class="menu">
           <a class="menu-item" href="dashboard.html" data-section="resumen" data-roles="admin,assistant,provider"><span class="icon"><iconify-icon icon="ph:house"></iconify-icon></span><span>Resumen</span></a>
@@ -36,11 +36,8 @@
           <button id="toggleSidebar" class="btn-outline topbar-toggle" aria-label="Alternar menú">
             <iconify-icon icon="ph:list"></iconify-icon>
           </button>
-          <div class="search">
-            <input type="search" placeholder="Buscar pacientes, órdenes…" />
-          </div>
           <div class="topbar-actions">
-            <select id="roleSelector" title="Rol">
+            <select id="roleSelector" title="Rol" hidden>
               <option value="assistant">Asistente</option>
               <option value="admin">Administrador</option>
               <option value="provider">Proveedor</option>
@@ -54,6 +51,19 @@
             <div class="panel-header">
               <h2>Pacientes</h2>
               <button class="btn-primary" data-roles="admin,assistant" id="btnNuevoPaciente">Registrar paciente</button>
+            </div>
+            <div class="filters">
+              <div class="field">
+                <label>Búsqueda nombre</label>
+                <input id="filtroPacNombre" type="text" placeholder="Nombre paciente" />
+              </div>
+              <div class="field">
+                <label>Contacto</label>
+                <input id="filtroPacContacto" type="text" placeholder="correo o teléfono" />
+              </div>
+              <div class="field" style="align-self:flex-end;">
+                <button id="limpiarFiltrosPac" class="btn-outline btn-sm">Limpiar filtros</button>
+              </div>
             </div>
             <div class="tabs">
               <a href="#" class="tab active" data-target="#listaPacientes">Listado</a>

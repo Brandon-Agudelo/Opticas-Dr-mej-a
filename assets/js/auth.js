@@ -2,7 +2,7 @@
 (function () {
   const loginForm = document.getElementById('loginForm');
   const logoutBtn = document.getElementById('logoutBtn');
-  const emailInput = document.getElementById('email');
+  const usernameInput = document.getElementById('username');
   const passwordInput = document.getElementById('password');
   const roleInput = document.getElementById('role');
   const rememberInput = document.getElementById('remember');
@@ -43,13 +43,14 @@
   if (loginForm) {
     loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const email = emailInput.value;
+      const username = usernameInput.value;
       const password = passwordInput.value;
       const role = roleInput.value;
-      const remember = rememberInput.checked;
+      // El checkbox Recordarme fue removido del HTML; si no existe, asumir false
+      const remember = (rememberInput && rememberInput.checked) || false;
 
       // Basic validation
-      if (!email || !password || !role) {
+      if (!username || !password || !role) {
         errorMsg.textContent = 'Por favor, completa todos los campos.';
         errorMsg.hidden = false;
         return;
@@ -60,9 +61,11 @@
       if (remember) {
         localStorage.setItem('auth_token', token);
         localStorage.setItem('auth_role', role);
+        localStorage.setItem('auth_username', username);
       } else {
         sessionStorage.setItem('auth_token', token);
         sessionStorage.setItem('auth_role', role);
+        sessionStorage.setItem('auth_username', username);
       }
 
       // Redirect to dashboard (sección Resumen)
@@ -79,5 +82,42 @@
       sessionStorage.removeItem('auth_role');
       window.location.href = 'index.html';
     });
+  }
+
+  // ---------- Toggle password visibility ----------
+  const toggleBtn = document.querySelector('.toggle-password');
+  if (passwordInput && toggleBtn) {
+    const setState = (visible) => {
+      passwordInput.type = visible ? 'text' : 'password';
+      toggleBtn.setAttribute('aria-label', visible ? 'Ocultar contraseña' : 'Mostrar contraseña');
+      toggleBtn.setAttribute('aria-pressed', String(visible));
+      toggleBtn.dataset.visible = visible ? 'true' : 'false';
+      passwordInput.focus();
+    };
+    // Estado inicial
+    setState(false);
+    toggleBtn.addEventListener('click', () => {
+      const nowVisible = passwordInput.type === 'password';
+      setState(nowVisible);
+    });
+  }
+
+  // ---------- Sync inputbox has-value ----------
+  function syncHasValue(input) {
+    const parent = input.closest('.inputbox');
+    if (!parent) return;
+    if (input.value && input.value.length > 0) {
+      parent.classList.add('has-value');
+    } else {
+      parent.classList.remove('has-value');
+    }
+  }
+  if (usernameInput) {
+    ['input', 'change', 'blur'].forEach((ev) => usernameInput.addEventListener(ev, () => syncHasValue(usernameInput)));
+    syncHasValue(usernameInput);
+  }
+  if (passwordInput) {
+    ['input', 'change', 'blur'].forEach((ev) => passwordInput.addEventListener(ev, () => syncHasValue(passwordInput)));
+    syncHasValue(passwordInput);
   }
 })();

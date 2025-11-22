@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Óptica — Iniciar Sesión</title>
+    <title></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,29 +13,40 @@
   <body class="theme">
     <main class="auth-layout">
       <section class="auth-card">
-        <div class="brand">
-          <div class="logo">👓</div>
-          <div class="brand-text">
-            <h1 class="brand-title">Óptica</h1>
-            <p class="brand-subtitle">Gestión</p>
-          </div>
-        </div>
+        <!-- Logo pequeño removido para dejar solo el logo grande del aside -->
 
         <form id="loginForm" class="form">
-          <h2 class="form-title">Iniciar sesión</h2>
-          <p class="form-desc">Accede al panel para gestionar pacientes, citas e inventario.</p>
+          <p class="form-desc">Bienvenido.</p>
 
-          <div class="field">
-            <label for="email">Correo electrónico</label>
-            <input id="email" name="email" type="email" placeholder="tu@optica.com" required />
-            <small class="hint" id="emailHint"></small>
+          <div>
+          <div class="form-control">
+            <input id="username" name="username" type="text" required aria-label="Usuario" />
+            <label aria-hidden="true">
+              <span style="transition-delay:0ms">U</span><span style="transition-delay:50ms">s</span><span style="transition-delay:100ms">u</span><span style="transition-delay:150ms">a</span><span style="transition-delay:200ms">r</span><span style="transition-delay:250ms">i</span><span style="transition-delay:300ms">o</span>
+            </label>
+          </div>
+            <small class="hint" id="usernameHint"></small>
           </div>
 
-          <div class="field">
-            <label for="password">Contraseña</label>
-            <div class="password-wrapper">
-              <input id="password" name="password" type="password" placeholder="••••••••" required minlength="6" />
-              <button type="button" class="toggle-password" aria-label="Mostrar u ocultar contraseña">👁️</button>
+          <div>
+            <div class="form-control">
+              <input id="password" name="password" type="password" required minlength="6" aria-label="Contraseña" />
+              <label aria-hidden="true">
+                <span style="transition-delay:0ms">C</span><span style="transition-delay:50ms">o</span><span style="transition-delay:100ms">n</span><span style="transition-delay:150ms">t</span><span style="transition-delay:200ms">r</span><span style="transition-delay:250ms">a</span><span style="transition-delay:300ms">s</span><span style="transition-delay:350ms">e</span><span style="transition-delay:400ms">ñ</span><span style="transition-delay:450ms">a</span>
+              </label>
+              <button type="button" class="toggle-password" aria-label="Mostrar contraseña" aria-pressed="false" data-visible="false">
+                <!-- Ícono ojo -->
+                <svg class="icon-eye" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <!-- Ícono ojo tachado -->
+                <svg class="icon-eye-off" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M2 12s4-7 10-7c2.9 0 5.4 1.5 7.3 3.3M22 12s-4 7-10 7c-2.9 0-5.4-1.5-7.3-3.3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                  <path d="M3 3l18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </button>
             </div>
             <small class="hint" id="passwordHint"></small>
           </div>
@@ -50,11 +61,7 @@
             <small class="hint" id="roleHint"></small>
           </div>
 
-          <div class="actions-row">
-            <label class="checkbox">
-              <input type="checkbox" id="remember" />
-              <span>Recordarme</span>
-            </label>
+          <div class="actions-row center">
             <a class="link" href="#" aria-disabled="true">¿Olvidaste tu contraseña?</a>
           </div>
 
@@ -64,9 +71,8 @@
         </form>
       </section>
       <section class="auth-aside">
-        <div class="aside-content">
-          <h3>Atención de calidad</h3>
-          <p>Agenda citas, registra recetas, controla lentes y accesorios, y da seguimiento a tus pacientes desde un solo lugar.</p>
+        <div class="aside-logo" aria-hidden="true">
+          <img src="assets/img/logo.png" alt="Ópticas Dr. Mejía" class="logo-img logo-right" />
         </div>
       </section>
     </main>

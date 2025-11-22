@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Registro de estudiante</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <main>
+    <h1>Registro de estudiante</h1>
+    <form action="php/insert.php" method="post">
+      <label>Nombre:<br><input type="text" name="nombre" required></label><br>
+      <label>Apellido:<br><input type="text" name="apellido" required></label><br>
+      <label>Correo:<br><input type="email" name="correo" required></label><br>
+      <label>Edad:<br><input type="number" name="edad" min="0"></label><br>
+      <label>Facultad:<br><input type="text" name="facultad"></label><br>
+      <label>Código:<br><input type="text" name="codigo" required></label><br>
+      <button type="submit">Registrar</button>
+    </form>
+
+    <p><a href="php/list.php">Ver registros guardados</a></p>
+  </main>
+</body>
+</html>

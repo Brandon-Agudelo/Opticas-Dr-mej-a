@@ -88,14 +88,24 @@
   const pacNombreInput = document.getElementById('pacNombre');
   function renderPacientes() {
     if (!listaPacientes) return;
+    // Leer filtros
+    const nombre = document.getElementById('filtroPacNombre')?.value.trim().toLowerCase() || '';
+    const contacto = document.getElementById('filtroPacContacto')?.value.trim().toLowerCase() || '';
+    // Filtrar
+    let pacientes = data.pacientes.filter(p => {
+      if (nombre && !p.nombre.toLowerCase().includes(nombre)) return false;
+      if (contacto && !(p.contacto || '').toLowerCase().includes(contacto)) return false;
+      return true;
+    });
+
     listaPacientes.innerHTML = '';
     const head = document.createElement('div'); head.className = 'table-row table-head'; head.innerHTML = '<div>Nombre</div><div>Contacto</div><div>Notas</div><div>Acciones</div>';
     listaPacientes.appendChild(head);
-    if (!data.pacientes || data.pacientes.length === 0) {
-      const empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = 'No hay pacientes. Usa "Registrar paciente" para añadir el primero.';
+    if (pacientes.length === 0) {
+      const empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = 'No hay pacientes con esos filtros.';
       listaPacientes.appendChild(empty);
     } else {
-      data.pacientes.forEach((p, idx) => {
+      pacientes.forEach((p, idx) => {
         const row = document.createElement('div'); row.className = 'table-row';
         row.innerHTML = `<div>${p.nombre}</div><div>${p.contacto || ''}</div><div>${p.notas || ''}</div><div><button class="btn-outline" data-idx="${idx}">Eliminar</button></div>`;
         row.querySelector('button').addEventListener('click', () => {
@@ -110,6 +120,19 @@
   function togglePacienteForm(show) { if (pacPanel) activateTab(pacPanel, show ? '#formPaciente' : '#listaPacientes'); }
   function setPacienteTabPersist(show) { localStorage.setItem('tab_pacientes', show ? '#formPaciente' : '#listaPacientes'); }
   if (btnNuevoPaciente) btnNuevoPaciente.addEventListener('click', () => { togglePacienteForm(true); setPacienteTabPersist(true); });
+  // Filtros pacientes
+  ['filtroPacNombre','filtroPacContacto'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', renderPacientes);
+  });
+  const limpiarPac = document.getElementById('limpiarFiltrosPac');
+  if (limpiarPac) limpiarPac.addEventListener('click', () => {
+    ['filtroPacNombre','filtroPacContacto'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    renderPacientes();
+  });
   if (cancelPaciente) cancelPaciente.addEventListener('click', () => { togglePacienteForm(false); setPacienteTabPersist(false); });
   if (formPaciente) formPaciente.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -142,6 +165,8 @@
       if (el) el.hidden = (sel !== targetSel);
     });
   }
+
+  
 
   function setupPanelTabs(sectionName) {
     const panel = main.querySelector(`[data-section="${sectionName}"]`);

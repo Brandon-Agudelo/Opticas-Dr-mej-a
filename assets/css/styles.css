@@ -35,6 +35,69 @@ body {
   background: var(--c-bg);
   color: var(--c-fg);
 }
+/* From Uiverse.io by liyaxu123 — Form-control para Usuario/Contraseña */
+.form-control {
+  position: relative;
+  margin: 12px 0 16px;
+  width: 100%;
+}
+.form-control input {
+  background-color: transparent;
+  border: 0;
+  border-bottom: 2px var(--c-text-light) solid;
+  display: block;
+  width: 100%;
+  padding: 16px 0;
+  font-size: 16px;
+  color: var(--c-fg);
+  outline: none;
+  padding-right: 60px; /* espacio ampliado para botón a la derecha */
+}
+.form-control input:focus,
+.form-control input:valid {
+  outline: 0;
+  border-bottom-color: var(--c-primary);
+}
+.form-control label {
+  position: absolute;
+  top: 15px;
+  left: 0;
+  pointer-events: none;
+}
+.form-control label span {
+  display: inline-block;
+  font-size: 16px;
+  min-width: 5px;
+  color: var(--c-text-light);
+  transition: 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+.form-control input:focus + label span,
+.form-control input:valid + label span {
+  color: var(--c-primary);
+  transform: translateY(-30px);
+}
+/* Botón de toggle dentro de form-control (solo contraseña) */
+.form-control .toggle-password {
+  position: absolute;
+  right: 4px; /* pequeño margen del borde derecho */
+  top: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0 8px; /* caja clicable sin separarse demasiado del borde */
+  font-size: 18px;
+  color: var(--c-fg);
+  z-index: 12; /* sobre la etiqueta y el input */
+}
+.form-control .toggle-password svg { width: 20px; height: 20px; }
+.form-control .toggle-password .icon-eye-off { display: none; }
+.form-control .toggle-password[data-visible="true"] .icon-eye { display: none; }
+.form-control .toggle-password[data-visible="true"] .icon-eye-off { display: inline; }
+.form-control .toggle-password:hover { opacity: 0.9; }
+.form-control .toggle-password:focus { outline: 2px solid var(--c-primary); outline-offset: 2px; border-radius: 4px; }
 a { color: var(--c-primary); text-decoration: none; }
 a:hover { text-decoration: underline; }
 .link { color: var(--c-primary); }
@@ -149,15 +212,37 @@ a:hover { text-decoration: underline; }
   padding: 40px;
 }
 .auth-aside {
-  background: var(--c-primary-light);
+  background: #ffffff; /* fondo blanco para resaltar el logo */
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 40px;
 }
 .aside-content { max-width: 320px; text-align: center; color: var(--c-primary); }
+/* Logo grande en el aside derecho */
+.auth-aside .aside-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+.auth-aside .logo-right {
+  height: clamp(180px, 36vw, 340px); /* ligeramente más grande */
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.08));
+}
 .brand { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
 .brand .logo { font-size: 48px; }
+/* Imagen de logo: tamaños consistentes */
+.logo-img {
+  display: block;
+  height: 56px;
+  width: auto;
+  object-fit: contain;
+}
+.logo-large { height: 72px; }
+.logo-topbar { height: 28px; }
 .brand-title { font-size: 24px; font-weight: 600; margin: 0; }
 .brand-subtitle { font-size: 16px; color: var(--c-text-light); margin: 0; }
 
@@ -229,6 +314,12 @@ a:hover { text-decoration: underline; }
 .form-desc { color: var(--c-text-light); margin: 8px 0 24px; }
 .field { display: flex; flex-direction: column; gap: 4px; }
 .field label { font-weight: 500; }
+/* Suavizar el label del campo Rol para más armonía visual */
+.field label[for="role"] {
+  color: var(--c-text-light);
+  font-size: 14px;
+  letter-spacing: 0.2px;
+}
 .field input, .field select {
   padding: 9px 12px;
   border: 1px solid var(--c-border);
@@ -237,6 +328,28 @@ a:hover { text-decoration: underline; }
   color: var(--c-fg);
   font-family: inherit;
   font-size: 15px;
+}
+/* Armonizar selector de Rol para que combine con inputs */
+.field select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  min-height: 40px;
+  padding-right: 36px; /* espacio para el indicador */
+  transition: border-color 0.2s ease, outline-color 0.2s ease, box-shadow 0.2s ease;
+  background-image: linear-gradient(45deg, transparent 50%, var(--c-fg) 50%),
+                    linear-gradient(135deg, var(--c-fg) 50%, transparent 50%);
+  background-position: right 16px center, right 10px center;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+.field select:hover {
+  border-color: var(--c-primary);
+}
+.field select:focus {
+  outline: 2px solid var(--c-primary);
+  outline-offset: 2px;
 }
 .field.invalid input, .field.invalid select { border-color: var(--c-danger); }
 .hint { font-size: 13px; color: var(--c-danger); min-height: 1.2em; }
@@ -255,6 +368,7 @@ a:hover { text-decoration: underline; }
   opacity: 0.6;
 }
 .actions-row { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
+.actions-row.center { justify-content: center; }
 .checkbox { display: flex; align-items: center; gap: 8px; cursor: pointer; }
 .error { color: var(--c-danger); background: rgba(255,107,107,0.1); padding: 10px; border-radius: 8px; }
 .btn-primary {
@@ -298,6 +412,8 @@ a:hover { text-decoration: underline; }
 .tab:hover { color: var(--c-primary); text-decoration: none; }
 .table { display: flex; flex-direction: column; }
 .table-head { font-weight: 600; color: var(--c-text-light); background: var(--c-bg); }
+/* Scroll horizontal de seguridad para tablas largas */
+.table { overflow-x: auto; }
 .table-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr auto;
@@ -351,4 +467,545 @@ a:hover { text-decoration: underline; }
   .auth-layout { grid-template-columns: 1fr; }
   .auth-aside { display: none; }
   .dashboard-grid { grid-template-columns: 1fr; }
+  /* Órdenes: ocultar columna Estado en pantallas medianas */
+  #listaOrdenes .table-head,
+  #listaOrdenes .table-row { grid-template-columns: 1fr 1fr auto !important; }
+  #listaOrdenes .table-head > div:nth-child(3),
+  #listaOrdenes .table-row > div:nth-child(3),
+  #listaOrdenes .table-head > div:nth-child(4),
+  #listaOrdenes .table-row > div:nth-child(4) { display: none; }
+  /* Proveedores: ocultar Notas */
+  #listaProveedores .table-head,
+  #listaProveedores .table-row { grid-template-columns: 1fr 1fr auto !important; }
+  #listaProveedores .table-head > div:nth-child(3),
+  #listaProveedores .table-row > div:nth-child(3) { display: none; }
+  /* Pagos: ocultar Fecha */
+  #listaPagos .table-head,
+  #listaPagos .table-row { grid-template-columns: 1fr 1fr auto !important; }
+  #listaPagos .table-head > div:nth-child(3),
+  #listaPagos .table-row > div:nth-child(3) { display: none; }
+  /* Reportes: Pagos (ocultar Comprobante) */
+  #tablaPagosReporte .table-head,
+  #tablaPagosReporte .table-row { grid-template-columns: 1fr 1fr 1fr 1fr !important; }
+  #tablaPagosReporte .table-head > div:nth-child(5),
+  #tablaPagosReporte .table-row > div:nth-child(5) { display: none; }
+  /* Reportes: Órdenes (ocultar Fecha) */
+  #tablaOrdenesReporte .table-head,
+  #tablaOrdenesReporte .table-row { grid-template-columns: 1fr 1fr 1fr 1fr 1fr !important; }
+  #tablaOrdenesReporte .table-head > div:nth-child(6),
+  #tablaOrdenesReporte .table-row > div:nth-child(6) { display: none; }
+}
+@media (max-width: 560px) {
+  /* Órdenes: mostrar solo Paciente y Acciones en pantallas pequeñas */
+  #listaOrdenes .table-head,
+  #listaOrdenes .table-row { grid-template-columns: 1fr auto !important; }
+  #listaOrdenes .table-head > div:nth-child(2),
+  #listaOrdenes .table-row > div:nth-child(2),
+  #listaOrdenes .table-head > div:nth-child(3),
+  #listaOrdenes .table-row > div:nth-child(3),
+  #listaOrdenes .table-head > div:nth-child(4),
+  #listaOrdenes .table-row > div:nth-child(4) { display: none; }
+  .btn-outline { padding: 8px 12px; font-size: 14px; }
+  /* Proveedores: mostrar solo Nombre y Acciones */
+  #listaProveedores .table-head,
+  #listaProveedores .table-row { grid-template-columns: 1fr auto !important; }
+  #listaProveedores .table-head > div:nth-child(2),
+  #listaProveedores .table-row > div:nth-child(2),
+  #listaProveedores .table-head > div:nth-child(3),
+  #listaProveedores .table-row > div:nth-child(3) { display: none; }
+  /* Pagos: mostrar solo Orden y Acciones */
+  #listaPagos .table-head,
+  #listaPagos .table-row { grid-template-columns: 1fr auto !important; }
+  #listaPagos .table-head > div:nth-child(2),
+  #listaPagos .table-row > div:nth-child(2),
+  #listaPagos .table-head > div:nth-child(3),
+  #listaPagos .table-row > div:nth-child(3) { display: none; }
+  /* Reportes: Pagos (ocultar Fecha también) */
+  #tablaPagosReporte .table-head,
+  #tablaPagosReporte .table-row { grid-template-columns: 1fr 1fr 1fr !important; }
+  #tablaPagosReporte .table-head > div:nth-child(4),
+  #tablaPagosReporte .table-row > div:nth-child(4) { display: none; }
+  /* Reportes: Órdenes (ocultar Pagada también) */
+  #tablaOrdenesReporte .table-head,
+  #tablaOrdenesReporte .table-row { grid-template-columns: 1fr 1fr 1fr 1fr !important; }
+  #tablaOrdenesReporte .table-head > div:nth-child(5),
+  #tablaOrdenesReporte .table-row > div:nth-child(5) { display: none; }
+}
+
+/* ===== MEJORAS RESPONSIVE PARA MÓVILES ===== */
+@media (max-width: 768px) {
+  /* Header y controles principales */
+  .topbar {
+    padding: 8px 16px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .topbar-actions {
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    flex: 1;
+  }
+  
+  .topbar-actions select,
+  .topbar-actions button {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+  
+  .search input {
+    max-width: 100%;
+    font-size: 14px;
+  }
+  
+  /* Contenido principal */
+  .main {
+    padding: 16px;
+  }
+  
+  /* Dashboard grid y KPIs */
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .kpi-grid .kpi {
+    font-size: 16px;
+    padding: 10px;
+  }
+  
+  .kpi-grid .kpi-label {
+    font-size: 11px;
+  }
+  
+  /* Títulos y encabezados */
+  h1, h2, h3 {
+    font-size: 1.2rem;
+    margin-bottom: 12px;
+  }
+  
+  /* Cards */
+  .card {
+    padding: 16px;
+    border-radius: 8px;
+  }
+  
+  /* Tablas */
+  .table-container {
+    overflow-x: auto;
+    margin: 0 -16px;
+    padding: 0 16px;
+  }
+  
+  .table-head,
+  .table-row {
+    font-size: 13px;
+  }
+  
+  /* Botones */
+  .btn-outline {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  
+  /* Filtros de fecha */
+  .date-filters {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .date-filters .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .date-filters .field-actions {
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .date-filters label {
+    font-size: 12px;
+    font-weight: 500;
+  }
+  
+  .date-filters input[type="date"],
+  .date-filters select {
+    font-size: 14px;
+    padding: 6px;
+  }
+  
+  .date-filters .field-actions {
+    grid-column: 1 / -1;
+  }
+  
+  /* Selector de rol */
+  #roleSelector {
+    max-width: 100px;
+  }
+  /* Logo más compacto en móvil */
+  .logo-img { height: 48px; }
+  .logo-large { height: 60px; }
+}
+
+@media (max-width: 560px) {
+  /* Ajustes para pantallas muy pequeñas */
+  .topbar {
+    padding: 6px 12px;
+  }
+  
+  .topbar-actions {
+    gap: 6px;
+  }
+  
+  .main {
+    padding: 12px;
+  }
+  
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .kpi-grid .kpi {
+    font-size: 14px;
+    padding: 8px;
+  }
+  
+  .card {
+    padding: 12px;
+  }
+  
+  .btn-outline {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  
+  /* Tablas en móviles muy pequeños */
+  .table-head,
+  .table-row {
+    font-size: 12px;
+  }
+  
+  /* Asegurar que el sidebar no cubra el contenido */
+  .app-layout:not(.collapsed) .sidebar {
+    width: 200px;
+  }
+  
+  /* Mejorar el overlay del sidebar */
+  .app-scrim {
+    background: rgba(0,0,0,0.7);
+  }
+  
+  /* Filtros en pantallas muy pequeñas */
+  .date-filters {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+  }
+  
+  .date-filters .field-actions {
+    flex-direction: row;
+    justify-content: stretch;
+  }
+  
+  .date-filters .field-actions button {
+    flex: 1;
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+}
+
+/* ===== FIXES ESPECÍFICOS PARA PROBLEMAS VISUALES ===== */
+
+/* Evitar que el sidebar cubra el contenido en móvil */
+@media (max-width: 960px) {
+  .app-layout:not(.collapsed) .content {
+    margin-left: 0;
+    transition: margin-left 0.2s ease-in-out;
+  }
+  
+  .app-layout:not(.collapsed) .content {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+/* Asegurar que los textos no se corten */
+.card h3,
+.kpi-label {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Mejorar la legibilidad de valores numéricos */
+.kpi {
+  word-break: break-word;
+}
+
+/* Fix para el selector de rol en móvil */
+#roleSelector {
+  min-width: 80px;
+  max-width: 120px;
+}
+
+/* Mejorar el espaciado de botones de acción */
+.table-row .btn-outline {
+  margin: 0 2px;
+}
+
+/* Asegurar que los modales se vean bien en móvil */
+  @media (max-width: 768px) {
+    .modal-overlay {
+      padding: 16px;
+    }
+    
+    .modal-card {
+      max-width: 100%;
+      margin: 0;
+      border-radius: 8px;
+    }
+  }
+
+/* Estilos para los filtros de fecha - Desktop first */
+.date-filters {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 16px;
+}
+
+.date-filters .field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.date-filters .field-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: end;
+}
+
+.date-filters label {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.date-filters input[type="date"],
+.date-filters select {
+  font-size: 14px;
+  padding: 8px;
+  border: 1px solid var(--c-border);
+  border-radius: 6px;
+  background: var(--c-card);
+}
+
+/* ===== MEJORAS ADICIONALES PARA MÓVILES ===== */
+
+/* Fix para el sidebar en móviles */
+@media (max-width: 960px) {
+  .app-layout:not(.collapsed) .sidebar {
+    width: 200px;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+  }
+  
+  .sidebar-brand {
+    padding: 12px 8px;
+    margin-bottom: 16px;
+  }
+  
+  .sidebar-brand .logo {
+    font-size: 20px;
+  }
+  
+  .sidebar-brand span {
+    font-size: 16px;
+  }
+  
+  .menu-item {
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+  
+  .menu-item .icon {
+    font-size: 18px;
+  }
+}
+
+/* Mejorar la visualización de KPIs en móviles */
+@media (max-width: 768px) {
+  .kpi {
+    font-size: 24px;
+  }
+  
+  .kpi-sub {
+    font-size: 12px;
+  }
+  
+  .card h3 {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+}
+
+/* Fix para tablas en móviles */
+@media (max-width: 768px) {
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -16px;
+    padding: 0 16px;
+  }
+  
+  .table {
+    min-width: 100%;
+  }
+  
+  .table-head,
+  .table-row {
+    min-width: 100%;
+  }
+}
+
+/* Mejorar los botones de acción en móviles */
+@media (max-width: 560px) {
+  .btn-primary,
+  .btn-outline {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-height: 32px;
+  }
+  
+  .table-row .btn-outline {
+    padding: 4px 6px;
+    font-size: 11px;
+    margin: 0 1px;
+  }
+}
+
+/* Fix para el header en móviles */
+@media (max-width: 560px) {
+  .topbar {
+    padding: 6px 12px;
+    gap: 6px;
+  }
+  
+  .topbar-toggle {
+    padding: 6px;
+    font-size: 16px;
+  }
+  
+  .search input {
+    font-size: 13px;
+    padding: 6px 8px;
+  }
+  
+  .topbar-actions {
+    gap: 6px;
+  }
+  
+  .topbar-actions button,
+  .topbar-actions select {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+}
+
+/* Asegurar que el contenido no se desborde */
+.content {
+  overflow-x: hidden;
+}
+
+/* Mejorar el scroll en iOS */
+@media (max-width: 768px) {
+  .content {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+/* From Uiverse.io by VijinV — Inputbox para Usuario */
+.inputbox {
+  position: relative;
+  width: 100%; /* ocupar ancho del contenedor del formulario */
+}
+.inputbox input {
+  position: relative;
+  width: 100%;
+  padding: 20px 10px 10px;
+  background: transparent;
+  outline: none;
+  box-shadow: none;
+  border: none;
+  color: var(--c-fg);
+  font-size: 1em;
+  letter-spacing: 0.05em;
+  transition: 0.5s;
+  z-index: 10;
+  padding-right: 52px; /* espacio para botón mostrar/ocultar */
+}
+.inputbox span {
+  position: absolute;
+  left: 0;
+  padding: 20px 10px 10px;
+  font-size: 1em;
+  color: var(--c-text-light);
+  letter-spacing: 0.05em;
+  transition: 0.5s;
+  pointer-events: none;
+}
+.inputbox input:valid ~ span,
+.inputbox input:focus ~ span {
+  color: var(--c-primary);
+  transform: translateX(-10px) translateY(-34px);
+  font-size: 0.75em;
+}
+.inputbox i {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--c-primary);
+  border-radius: 4px;
+  transition: 0.5s;
+  pointer-events: none;
+  z-index: 1; /* debajo de input y toggle */
+}
+.inputbox input:valid ~ i,
+.inputbox input:focus ~ i {
+  height: 44px;
+}
+/* Flotado y barra activa cuando hay valor (no depende de :valid) */
+.inputbox.has-value span {
+  color: var(--c-primary);
+  transform: translateX(-10px) translateY(-34px);
+  font-size: 0.75em;
+}
+.inputbox.has-value i { height: 44px; }
+
+/* Botón de toggle dentro del inputbox de contraseña */
+.inputbox .toggle-password {
+  position: absolute;
+  right: 1px;
+  top: 1px;
+  bottom: 1px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0 12px;
+  font-size: 18px;
+  opacity: 0.6;
+  z-index: 12; /* por encima de barra azul */
+  display: flex;
+  align-items: center;
+  color: var(--c-fg);
 }
