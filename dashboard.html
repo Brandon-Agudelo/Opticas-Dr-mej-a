@@ -17,7 +17,6 @@
       <aside class="sidebar">
         <div class="sidebar-brand">
           <img src="assets/img/logo.png" alt="Ópticas Dr. Mejía" class="logo-img" />
-          <span></span>
         </div>
         <nav class="menu">
           <a class="menu-item active" href="dashboard.html" data-section="resumen" data-roles="admin,assistant,provider"><span class="icon"><iconify-icon icon="ph:house"></iconify-icon></span><span>Resumen</span></a>
@@ -84,9 +83,10 @@
           <section class="panel" data-section="proveedores" data-roles="admin,assistant" hidden>
             <div class="panel-header">
               <h2>Proveedores</h2>
+              <button class="btn-outline" id="toggleProvFilters" title="Mostrar filtros"><iconify-icon icon="ph:magnifying-glass"></iconify-icon></button>
               <button class="btn-primary" data-roles="admin,assistant" id="btnNuevoProveedor">Registrar proveedor</button>
             </div>
-            <div class="filters">
+            <div class="filters" id="provFilters" hidden>
               <div class="field">
                 <label>Búsqueda nombre</label>
                 <input id="filtroProvNombre" type="text" placeholder="Nombre proveedor" />
@@ -118,9 +118,10 @@
           <section class="panel" data-section="ordenes" data-roles="admin,assistant,provider" hidden>
             <div class="panel-header">
               <h2>Órdenes</h2>
+              <button class="btn-outline" id="toggleOrdenFilters" title="Mostrar filtros"><iconify-icon icon="ph:magnifying-glass"></iconify-icon></button>
               <button class="btn-primary" data-roles="admin,assistant" id="btnNuevaOrden">Crear orden</button>
             </div>
-            <div class="filters">
+            <div class="filters" id="ordenFilters" hidden>
               <div class="field">
                 <label>Búsqueda paciente</label>
                 <input id="filtroOrdenPaciente" type="text" placeholder="Nombre paciente" />
@@ -152,17 +153,44 @@
             </div>
             <div class="tabs">
               <a href="#" class="tab active" data-target="#listaOrdenes">Listado</a>
-              <a href="#" class="tab" data-target="#formOrden" data-roles="admin,assistant">Registrar</a>
             </div>
             <form id="formOrden" class="form" data-roles="admin,assistant" hidden>
-              <div class="field"><label>Paciente</label><input id="ordPaciente" required /><small class="hint" id="ordPacienteHint"></small></div>
+              <div class="field"><label>Consecutivo sistema #</label><input id="ordConsecutivo" placeholder="texto libre" /><small class="hint" id="ordConsecutivoHint"></small></div>
+              <div class="field"><label>Orden #</label><input id="ordNumero" placeholder="texto libre" /><small class="hint" id="ordNumeroHint"></small></div>
+
+              <div class="field"><label>Fecha</label><input id="ordFecha" type="date" /><small class="hint" id="ordFechaHint"></small></div>
+              <div class="field"><label>Ciudad/Municipio</label><input id="ordCiudad" placeholder="texto libre" /><small class="hint" id="ordCiudadHint"></small></div>
+              <div class="field"><label>Sede</label><input id="ordSede" placeholder="texto libre" /><small class="hint" id="ordSedeHint"></small></div>
+              <div class="field"><label>Empresa/Convenio/Seg</label><input id="ordEmpresa" placeholder="texto libre" /><small class="hint" id="ordEmpresaHint"></small></div>
+
+              <div class="field"><label>Nombre del paciente</label><input id="ordPaciente" required /><small class="hint" id="ordPacienteHint"></small></div>
+              <div class="field"><label>CC del paciente</label><input id="ordPacienteCC" placeholder="texto libre" /><small class="hint" id="ordPacienteCCHint"></small></div>
+
               <div class="field"><label>Proveedor</label>
                 <select id="ordProveedor" required></select>
                 <small class="hint" id="ordProveedorHint"></small>
               </div>
-              <div class="field"><label>Fórmula OD</label><input id="ordFormulaOD" placeholder="-2.00" /><small class="hint" id="ordFormulaODHint"></small></div>
-              <div class="field"><label>Fórmula OI</label><input id="ordFormulaOI" placeholder="-1.75" /><small class="hint" id="ordFormulaOIHint"></small></div>
-              <div class="field"><label>Notas</label><input id="ordNotas" /><small class="hint" id="ordNotasHint"></small></div>
+
+              <div class="field"><label>Clase de lentes</label>
+                <select id="ordClaseLentes">
+                  <option value="progresivo">Progresivo</option>
+                  <option value="bifocal">Bifocal</option>
+                  <option value="monofocal">Monofocal</option>
+                </select>
+                <small class="hint" id="ordClaseLentesHint"></small>
+              </div>
+
+              <div class="field"><label>Tipo de lente y filtros</label><input id="ordTipoLenteFiltros" placeholder="texto libre" /><small class="hint" id="ordTipoLenteFiltrosHint"></small></div>
+
+              <div class="field"><label>OD</label><input id="ordOD" placeholder="texto libre" /><small class="hint" id="ordODHint"></small></div>
+              <div class="field"><label>OI</label><input id="ordOI" placeholder="texto libre" /><small class="hint" id="ordOIHint"></small></div>
+              <div class="field"><label>ADD</label><input id="ordADD" placeholder="texto libre" /><small class="hint" id="ordADDHint"></small></div>
+              <div class="field"><label>DP y ALT</label><input id="ordDPALT" placeholder="texto libre" /><small class="hint" id="ordDPALTHint"></small></div>
+
+              <div class="field"><label>Información adicional</label><input id="ordInfoAdicional" placeholder="texto libre" /><small class="hint" id="ordInfoAdicionalHint"></small></div>
+              <div class="field"><label>Tipo de montura</label><input id="ordTipoMontura" placeholder="texto libre" /><small class="hint" id="ordTipoMonturaHint"></small></div>
+              <div class="field"><label>Observaciones</label><input id="ordObservaciones" placeholder="texto libre" /><small class="hint" id="ordObservacionesHint"></small></div>
+
               <div style="display:flex; gap:8px;">
                 <button class="btn-primary" type="submit">Guardar orden</button>
                 <button class="btn-outline" type="button" id="cancelOrden">Cancelar</button>
@@ -217,8 +245,9 @@
           <section class="panel" data-section="reportes" data-roles="admin,assistant" hidden>
             <div class="panel-header">
               <h2>Reportes</h2>
+              <button class="btn-outline" id="toggleReportFilters" title="Mostrar filtros"><iconify-icon icon="ph:magnifying-glass"></iconify-icon></button>
             </div>
-            <div class="filters date-filters">
+            <div class="filters date-filters" id="reporteFilters" hidden>
               <div class="field"><label>Desde</label><input type="date" id="reporteDesde" /></div>
               <div class="field"><label>Hasta</label><input type="date" id="reporteHasta" /></div>
               <div class="field"><label>Proveedor</label><select id="reporteProveedor"><option value="">Todos</option></select></div>

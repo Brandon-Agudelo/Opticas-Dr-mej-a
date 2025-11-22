@@ -91,6 +91,8 @@
     });
     // Si la sección actual no es permitida, redirige a resumen
     ensureSectionAllowed();
+    // Re-render de notificaciones según rol
+    try { renderNotificaciones(); } catch {}
   }
   if (roleSelector) {
     roleSelector.value = getRole();
@@ -354,17 +356,88 @@
   const listaOrdenes = document.getElementById('listaOrdenes');
   const formOrden = document.getElementById('formOrden');
   const btnNuevaOrden = document.getElementById('btnNuevaOrden');
+  const ordenFilters = document.getElementById('ordenFilters');
+  const toggleOrdenFiltersBtn = document.getElementById('toggleOrdenFilters');
+  const provFilters = document.getElementById('provFilters');
+  const toggleProvFiltersBtn = document.getElementById('toggleProvFilters');
+  const reporteFilters = document.getElementById('reporteFilters');
+  const toggleReportFiltersBtn = document.getElementById('toggleReportFilters');
   const cancelOrden = document.getElementById('cancelOrden');
   const ordPacienteInput = document.getElementById('ordPaciente');
   const ordProveedorSelect = document.getElementById('ordProveedor');
-  const ordFormulaODInput = document.getElementById('ordFormulaOD');
-  const ordFormulaOIInput = document.getElementById('ordFormulaOI');
-  const ordNotasInput = document.getElementById('ordNotas');
+  // Nuevos campos para la orden (estructura solicitada)
+  const ordConsecutivoInput = document.getElementById('ordConsecutivo');
+  const ordNumeroInput = document.getElementById('ordNumero');
+  const ordFechaInput = document.getElementById('ordFecha');
+  const ordCiudadInput = document.getElementById('ordCiudad');
+  const ordSedeInput = document.getElementById('ordSede');
+  const ordEmpresaInput = document.getElementById('ordEmpresa');
+  const ordPacienteCCInput = document.getElementById('ordPacienteCC');
+  const ordClaseLentesSelect = document.getElementById('ordClaseLentes');
+  const ordTipoLenteFiltrosInput = document.getElementById('ordTipoLenteFiltros');
+  const ordODInput = document.getElementById('ordOD');
+  const ordOIInput = document.getElementById('ordOI');
+  const ordADDInput = document.getElementById('ordADD');
+  const ordDPALTInput = document.getElementById('ordDPALT');
+  const ordInfoAdicionalInput = document.getElementById('ordInfoAdicional');
+  const ordTipoMonturaInput = document.getElementById('ordTipoMontura');
+  const ordObservacionesInput = document.getElementById('ordObservaciones');
 
   function providerNameById(id) {
     const p = data.proveedores.find(x => String(x.id) === String(id));
     return p ? p.nombre : '(sin proveedor)';
   }
+
+  // Modal genérico para filtros
+  const filtersModalState = {};
+  function openFiltersModal(containerEl, title, triggerBtn) {
+    if (!containerEl) return;
+    const id = containerEl.id || Math.random().toString(36).slice(2);
+    // Guardar parent y nextSibling para restaurar
+    filtersModalState[id] = { parent: containerEl.parentElement, next: containerEl.nextElementSibling };
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed'; overlay.style.inset = '0'; overlay.style.background = 'rgba(0,0,0,0.35)'; overlay.style.zIndex = '1000';
+    const modal = document.createElement('div');
+    modal.className = 'card';
+    modal.style.position = 'fixed'; modal.style.top = '50%'; modal.style.left = '50%'; modal.style.transform = 'translate(-50%, -50%)';
+    modal.style.width = 'min(700px, 94vw)'; modal.style.maxHeight = '85vh'; modal.style.overflow = 'auto'; modal.style.padding = '16px';
+    const header = document.createElement('div');
+    header.style.display = 'flex'; header.style.justifyContent = 'space-between'; header.style.alignItems = 'center'; header.style.gap = '8px';
+    header.innerHTML = `<div><h3 style="margin:0;">${title || 'Filtros'}</h3><div style="color:var(--c-text-light);font-size:13px;">Ajusta los criterios y aplica</div></div><button class="btn-outline" id="closeFiltersModal" title="Cerrar"><iconify-icon icon="ph:x"></iconify-icon></button>`;
+    const body = document.createElement('div');
+    containerEl.hidden = false;
+    body.appendChild(containerEl);
+    const footer = document.createElement('div');
+    footer.style.display = 'flex'; footer.style.gap = '8px'; footer.style.marginTop = '12px';
+    const applyBtn = document.createElement('button'); applyBtn.className = 'btn-primary'; applyBtn.textContent = 'Aplicar';
+    const cancelBtn = document.createElement('button'); cancelBtn.className = 'btn-outline'; cancelBtn.textContent = 'Cerrar';
+    footer.appendChild(applyBtn); footer.appendChild(cancelBtn);
+    modal.appendChild(header); modal.appendChild(body); modal.appendChild(footer);
+    overlay.appendChild(modal); document.body.appendChild(overlay);
+
+    function close() {
+      try {
+        const st = filtersModalState[id];
+        if (st && st.parent) {
+          containerEl.hidden = true;
+          if (st.next && st.next.parentElement === st.parent) st.parent.insertBefore(containerEl, st.next);
+          else st.parent.appendChild(containerEl);
+        }
+        document.body.removeChild(overlay);
+        if (triggerBtn) triggerBtn.setAttribute('aria-pressed', 'false');
+      } catch {}
+    }
+    if (triggerBtn) triggerBtn.setAttribute('aria-pressed', 'true');
+    modal.querySelector('#closeFiltersModal').addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    applyBtn.addEventListener('click', close);
+    cancelBtn.addEventListener('click', close);
+  }
+
+  // Hook de botones de lupa
+  if (toggleOrdenFiltersBtn) toggleOrdenFiltersBtn.addEventListener('click', () => openFiltersModal(ordenFilters, 'Filtros de órdenes', toggleOrdenFiltersBtn));
+  if (toggleProvFiltersBtn) toggleProvFiltersBtn.addEventListener('click', () => openFiltersModal(provFilters, 'Filtros de proveedores', toggleProvFiltersBtn));
+  if (toggleReportFiltersBtn) toggleReportFiltersBtn.addEventListener('click', () => openFiltersModal(reporteFilters, 'Filtros de reportes', toggleReportFiltersBtn));
 
   function refreshProveedorOptions() {
     if (!ordProveedorSelect) return;
@@ -493,6 +566,7 @@
     modal.style.overflow = 'auto';
     modal.style.padding = '16px';
     const monto = (data.pagos || []).filter(p => Number(p.ordenId) === Number(o.id)).reduce((s, p) => s + Number(p.monto || 0), 0);
+    const fechaStr = o.fecha ? new Date(o.fecha).toLocaleDateString() : '-';
     modal.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
         <div>
@@ -502,27 +576,61 @@
         <button class="btn-outline" id="closeOrdenModal" title="Cerrar"><iconify-icon icon="ph:x"></iconify-icon></button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
-        <div><div style="color:var(--c-text-light);font-size:13px;">Número de orden</div><div>#${o.id}</div></div>
-        <div><div style="color:var(--c-text-light);font-size:13px;">Cliente</div><div>${o.paciente}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">ID (sistema)</div><div>#${o.id}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Consecutivo sistema</div><div>${o.consecutivo || '-'}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Orden #</div><div>${o.numero || '-'}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Fecha</div><div>${fechaStr}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Ciudad/Municipio</div><div>${o.ciudad || '-'}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Sede</div><div>${o.sede || '-'}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Empresa/Convenio</div><div>${o.empresa || '-'}</div></div>
         <div><div style="color:var(--c-text-light);font-size:13px;">Proveedor</div><div>${providerNameById(o.proveedorId)}</div></div>
-        <div><div style="color:var(--c-text-light);font-size:13px;">Monto</div><div>${monto.toFixed(2)}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Paciente</div><div>${o.paciente}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">CC del paciente</div><div>${o.pacienteCC || '-'}</div></div>
       </div>
+
       <div style="margin-top:12px;">
-        <h4 style="margin:8px 0;">Fórmula óptica</h4>
+        <h4 style="margin:8px 0;">Lentes</h4>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;">
-            <div style="font-weight:600;">Ojo derecho (OD)</div>
-            <div style="color:var(--c-text-light);">${o.formulaOD || '-'}</div>
+            <div style="font-weight:600;">Clase de lentes</div>
+            <div style="color:var(--c-text-light);">${o.claseLentes || '-'}</div>
           </div>
           <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;">
-            <div style="font-weight:600;">Ojo izquierdo (OI)</div>
-            <div style="color:var(--c-text-light);">${o.formulaOI || '-'}</div>
+            <div style="font-weight:600;">Tipo de lente y filtros</div>
+            <div style="color:var(--c-text-light);">${o.tipoLenteFiltros || '-'}</div>
           </div>
         </div>
       </div>
+
       <div style="margin-top:12px;">
-        <div style="color:var(--c-text-light);font-size:13px;">Descripción</div>
-        <div>${o.notas || 'Sin descripción'}</div>
+        <h4 style="margin:8px 0;">Valores ópticos</h4>
+        <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:12px;">
+          <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;"><div style="font-weight:600;">OD</div><div style="color:var(--c-text-light);">${o.od || '-'}</div></div>
+          <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;"><div style="font-weight:600;">OI</div><div style="color:var(--c-text-light);">${o.oi || '-'}</div></div>
+          <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;"><div style="font-weight:600;">ADD</div><div style="color:var(--c-text-light);">${o.add || '-'}</div></div>
+          <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;"><div style="font-weight:600;">DP y ALT</div><div style="color:var(--c-text-light);">${o.dpAlt || '-'}</div></div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <h4 style="margin:8px 0;">Otros</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;">
+            <div style="font-weight:600;">Tipo de montura</div>
+            <div style="color:var(--c-text-light);">${o.tipoMontura || '-'}</div>
+          </div>
+          <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;">
+            <div style="font-weight:600;">Información adicional</div>
+            <div style="color:var(--c-text-light);">${o.infoAdicional || '-'}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="color:var(--c-text-light);font-size:13px;">Observaciones</div>
+        <div>${o.observaciones || '-'}</div>
+        <div style="color:var(--c-text-light);font-size:13px;margin-top:8px;">Monto pagado</div>
+        <div>${monto.toFixed(2)}</div>
       </div>
     `;
     overlay.appendChild(modal);
@@ -553,6 +661,7 @@
     modal.style.overflow = 'auto';
     modal.style.padding = '16px';
     const monto = (data.pagos || []).filter(p => Number(p.ordenId) === Number(o.id)).reduce((s, p) => s + Number(p.monto || 0), 0);
+    const fechaStr = o.fecha ? new Date(o.fecha).toLocaleDateString() : '-';
     modal.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
         <div>
@@ -562,27 +671,61 @@
         <button class="btn-outline" id="closeOrdenModal" title="Cerrar"><iconify-icon icon="ph:x"></iconify-icon></button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
-        <div><div style="color:var(--c-text-light);font-size:13px;">Número de orden</div><div>#${o.id}</div></div>
-        <div><div style="color:var(--c-text-light);font-size:13px;">Cliente</div><div>${o.paciente}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">ID (sistema)</div><div>#${o.id}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Consecutivo sistema</div><div>${o.consecutivo || '-'}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Orden #</div><div>${o.numero || '-'}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Fecha</div><div>${fechaStr}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Ciudad/Municipio</div><div>${o.ciudad || '-'}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Sede</div><div>${o.sede || '-'}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Empresa/Convenio</div><div>${o.empresa || '-'}</div></div>
         <div><div style="color:var(--c-text-light);font-size:13px;">Proveedor</div><div>${providerNameById(o.proveedorId)}</div></div>
-        <div><div style="color:var(--c-text-light);font-size:13px;">Monto</div><div>${monto.toFixed(2)}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">Paciente</div><div>${o.paciente}</div></div>
+        <div><div style="color:var(--c-text-light);font-size:13px;">CC del paciente</div><div>${o.pacienteCC || '-'}</div></div>
       </div>
+
       <div style="margin-top:12px;">
-        <h4 style="margin:8px 0;">Fórmula óptica</h4>
+        <h4 style="margin:8px 0;">Lentes</h4>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;">
-            <div style="font-weight:600;">Ojo derecho (OD)</div>
-            <div style="color:var(--c-text-light);">${o.formulaOD || '-'}</div>
+            <div style="font-weight:600;">Clase de lentes</div>
+            <div style="color:var(--c-text-light);">${o.claseLentes || '-'}</div>
           </div>
           <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;">
-            <div style="font-weight:600;">Ojo izquierdo (OI)</div>
-            <div style="color:var(--c-text-light);">${o.formulaOI || '-'}</div>
+            <div style="font-weight:600;">Tipo de lente y filtros</div>
+            <div style="color:var(--c-text-light);">${o.tipoLenteFiltros || '-'}</div>
           </div>
         </div>
       </div>
+
       <div style="margin-top:12px;">
-        <div style="color:var(--c-text-light);font-size:13px;">Descripción</div>
-        <div>${o.notas || 'Sin descripción'}</div>
+        <h4 style="margin:8px 0;">Valores ópticos</h4>
+        <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:12px;">
+          <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;"><div style="font-weight:600;">OD</div><div style="color:var(--c-text-light);">${o.od || '-'}</div></div>
+          <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;"><div style="font-weight:600;">OI</div><div style="color:var(--c-text-light);">${o.oi || '-'}</div></div>
+          <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;"><div style="font-weight:600;">ADD</div><div style="color:var(--c-text-light);">${o.add || '-'}</div></div>
+          <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;"><div style="font-weight:600;">DP y ALT</div><div style="color:var(--c-text-light);">${o.dpAlt || '-'}</div></div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <h4 style="margin:8px 0;">Otros</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;">
+            <div style="font-weight:600;">Tipo de montura</div>
+            <div style="color:var(--c-text-light);">${o.tipoMontura || '-'}</div>
+          </div>
+          <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;">
+            <div style="font-weight:600;">Información adicional</div>
+            <div style="color:var(--c-text-light);">${o.infoAdicional || '-'}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="color:var(--c-text-light);font-size:13px;">Observaciones</div>
+        <div>${o.observaciones || '-'}</div>
+        <div style="color:var(--c-text-light);font-size:13px;margin-top:8px;">Monto pagado</div>
+        <div>$${monto.toFixed(2)}</div>
       </div>
     `;
     overlay.appendChild(modal);
@@ -595,6 +738,12 @@
 
   function renderOrdenes() {
     if (!listaOrdenes) return;
+    // Asegura que el formulario de creación no se muestre en el listado
+    // Evita ocultarlo si está dentro del modal abierto (overlay)
+    try {
+      const isInModal = (typeof ordenCreateOverlay !== 'undefined' && ordenCreateOverlay && ordenCreateOverlay.contains(formOrden));
+      if (formOrden && !isInModal) formOrden.hidden = true;
+    } catch { if (formOrden) formOrden.hidden = true; }
     // Cargar proveedores en select
     const provSelect = document.getElementById('filtroOrdenProveedor');
     if (provSelect && provSelect.children.length <= 1) {
@@ -661,9 +810,91 @@
       if (el) el.hidden = (sel !== targetSel);
     });
   }
-  function toggleOrdenForm(show) { if (ordPanel) activateTab(ordPanel, show ? '#formOrden' : '#listaOrdenes'); }
-  function setOrdenTabPersist(show) { localStorage.setItem('tab_ordenes', show ? '#formOrden' : '#listaOrdenes'); }
-  if (btnNuevaOrden) btnNuevaOrden.addEventListener('click', () => { toggleOrdenForm(true); setOrdenTabPersist(true); });
+  // ---- Modal de creación de órdenes ----
+  let ordenCreateOverlay = null;
+  let formOriginalParent = null;
+  let formOriginalNextSibling = null;
+
+  function openOrdenCreateModal() {
+    if (!formOrden) return;
+    // Crear overlay/modal con estilos inline para evitar depender de CSS externo
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.right = '0';
+    overlay.style.bottom = '0';
+    overlay.style.background = 'rgba(0,0,0,0.35)';
+    overlay.style.zIndex = '1000';
+
+    const modal = document.createElement('div');
+    modal.className = 'card';
+    modal.style.position = 'fixed';
+    modal.style.top = '50%';
+    modal.style.left = '50%';
+    modal.style.transform = 'translate(-50%, -50%)';
+    modal.style.width = 'min(720px, 94vw)';
+    modal.style.maxHeight = '85vh';
+    modal.style.overflow = 'auto';
+    modal.style.padding = '16px';
+
+    // Encabezado del modal
+    const header = document.createElement('div');
+    header.style.display = 'flex';
+    header.style.justifyContent = 'space-between';
+    header.style.alignItems = 'center';
+    header.style.gap = '8px';
+    header.innerHTML = `
+      <div>
+        <h3 style="margin:0;">Registrar orden</h3>
+        <div style="color:var(--c-text-light);font-size:13px;">Completa la información de la orden</div>
+      </div>
+      <button class="btn-outline" id="closeCreateOrdenModal" title="Cerrar"><iconify-icon icon="ph:x"></iconify-icon></button>
+    `;
+
+    const body = document.createElement('div');
+
+    // Guardar posición original del formulario para restaurarlo al cerrar
+    formOriginalParent = formOrden.parentElement;
+    // insertarlo antes de la tabla de órdenes si existe
+    const beforeNode = document.getElementById('listaOrdenes');
+    formOriginalNextSibling = beforeNode || formOrden.nextElementSibling;
+
+    // Mostrar el formulario dentro del modal
+    formOrden.hidden = false;
+    body.appendChild(formOrden);
+
+    modal.appendChild(header);
+    modal.appendChild(body);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    function close() {
+      try {
+        // Ocultar y restaurar el formulario a su contenedor original
+        formOrden.hidden = true;
+        if (formOriginalParent) {
+          if (formOriginalNextSibling && formOriginalNextSibling.parentElement === formOriginalParent) {
+            formOriginalParent.insertBefore(formOrden, formOriginalNextSibling);
+          } else {
+            formOriginalParent.appendChild(formOrden);
+          }
+        }
+        document.body.removeChild(overlay);
+        ordenCreateOverlay = null;
+      } catch {}
+    }
+
+    const closeBtn = modal.querySelector('#closeCreateOrdenModal');
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+    ordenCreateOverlay = overlay;
+    // Enfocar el primer campo al abrir
+    setTimeout(() => { try { ordPacienteInput && ordPacienteInput.focus(); } catch {} }, 50);
+  }
+
+  if (btnNuevaOrden) btnNuevaOrden.addEventListener('click', () => { openOrdenCreateModal(); });
   // Filtros órdenes
   ['filtroOrdenPaciente','filtroOrdenProveedor','filtroOrdenEstado','filtroOrdenFecha'].forEach(id => {
     const el = document.getElementById(id);
@@ -677,7 +908,14 @@
     });
     renderOrdenes();
   });
-  if (cancelOrden) cancelOrden.addEventListener('click', () => { toggleOrdenForm(false); setOrdenTabPersist(false); });
+  if (cancelOrden) cancelOrden.addEventListener('click', () => {
+    // Cierra el modal si está abierto; si no, oculta el formulario
+    if (ordenCreateOverlay) {
+      try { ordenCreateOverlay.dispatchEvent(new Event('click')); } catch {}
+    } else {
+      formOrden.hidden = true;
+    }
+  });
   if (formOrden) formOrden.addEventListener('submit', (e) => {
     e.preventDefault();
     const paciente = ordPacienteInput.value.trim();
@@ -685,21 +923,41 @@
     markField('ordPaciente', !!paciente, 'El paciente es obligatorio');
     markField('ordProveedor', !!proveedorId, 'Debes seleccionar un proveedor');
     if (!paciente || !proveedorId) return;
+    const fechaStr = (ordFechaInput && ordFechaInput.value) ? ordFechaInput.value : '';
+    const fechaTs = fechaStr ? (new Date(fechaStr).getTime()) : Date.now();
     const orden = {
       id: Date.now(),
+      consecutivo: (ordConsecutivoInput?.value || '').trim(),
+      numero: (ordNumeroInput?.value || '').trim(),
+      fecha: fechaTs,
+      ciudad: (ordCiudadInput?.value || '').trim(),
+      sede: (ordSedeInput?.value || '').trim(),
+      empresa: (ordEmpresaInput?.value || '').trim(),
       paciente,
+      pacienteCC: (ordPacienteCCInput?.value || '').trim(),
       proveedorId: Number(proveedorId),
-      formulaOD: (ordFormulaODInput.value || '').trim(),
-      formulaOI: (ordFormulaOIInput.value || '').trim(),
-      notas: (ordNotasInput.value || '').trim(),
+      claseLentes: (ordClaseLentesSelect?.value || '').trim(),
+      tipoLenteFiltros: (ordTipoLenteFiltrosInput?.value || '').trim(),
+      od: (ordODInput?.value || '').trim(),
+      oi: (ordOIInput?.value || '').trim(),
+      add: (ordADDInput?.value || '').trim(),
+      dpAlt: (ordDPALTInput?.value || '').trim(),
+      infoAdicional: (ordInfoAdicionalInput?.value || '').trim(),
+      tipoMontura: (ordTipoMonturaInput?.value || '').trim(),
+      observaciones: (ordObservacionesInput?.value || '').trim(),
       estado: 'enviada',
       pagada: false,
     };
     data.ordenes.push(orden);
     try { data.notificaciones.push({ id: Date.now(), para: 'provider', mensaje: `Orden #${orden.id} asignada a ${providerNameById(orden.proveedorId)}`, fecha: Date.now() }); } catch {}
     Store.save(data);
-    toggleOrdenForm(false);
+    // Cerrar modal y limpiar
     formOrden.reset();
+    if (ordenCreateOverlay) {
+      try { ordenCreateOverlay.dispatchEvent(new Event('click')); } catch {}
+    } else {
+      formOrden.hidden = true;
+    }
     renderOrdenes(); updateKPIsAndChart(); updateCharts(); try { renderNotificaciones(); } catch {}
   });
 

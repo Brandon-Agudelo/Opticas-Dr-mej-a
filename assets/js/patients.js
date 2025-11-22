@@ -85,6 +85,8 @@
   const formPaciente = document.getElementById('formPaciente');
   const btnNuevoPaciente = document.getElementById('btnNuevoPaciente');
   const cancelPaciente = document.getElementById('cancelPaciente');
+  const pacFilters = document.getElementById('pacFilters');
+  const togglePacFiltersBtn = document.getElementById('togglePacFilters');
   const pacNombreInput = document.getElementById('pacNombre');
   function renderPacientes() {
     if (!listaPacientes) return;
@@ -119,7 +121,98 @@
   const pacPanel = main.querySelector('[data-section="pacientes"]');
   function togglePacienteForm(show) { if (pacPanel) activateTab(pacPanel, show ? '#formPaciente' : '#listaPacientes'); }
   function setPacienteTabPersist(show) { localStorage.setItem('tab_pacientes', show ? '#formPaciente' : '#listaPacientes'); }
-  if (btnNuevoPaciente) btnNuevoPaciente.addEventListener('click', () => { togglePacienteForm(true); setPacienteTabPersist(true); });
+  // Modal para Registrar Paciente
+  const pacFormModalState = {};
+  function openPacienteFormModal(triggerBtn) {
+    if (!formPaciente) return;
+    const id = 'formPaciente';
+    pacFormModalState[id] = { parent: formPaciente.parentElement, next: formPaciente.nextElementSibling };
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed'; overlay.style.inset = '0'; overlay.style.background = 'rgba(0,0,0,0.35)'; overlay.style.zIndex = '1000';
+    const modal = document.createElement('div');
+    modal.className = 'card';
+    modal.style.position = 'fixed'; modal.style.top = '50%'; modal.style.left = '50%'; modal.style.transform = 'translate(-50%, -50%)';
+    modal.style.width = 'min(700px, 94vw)'; modal.style.maxHeight = '85vh'; modal.style.overflow = 'auto'; modal.style.padding = '16px';
+    modal.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+      <div><h3 style="margin:0;">Registrar paciente</h3><div style="color:var(--c-text-light);font-size:13px;">Complete los datos y guarde</div></div>
+      <button class="btn-outline" id="closePacFormModal" title="Cerrar"><iconify-icon icon="ph:x"></iconify-icon></button>
+    </div>`;
+    const body = document.createElement('div');
+    formPaciente.hidden = false;
+    body.appendChild(formPaciente);
+    modal.appendChild(body);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    function close() {
+      try {
+        const st = pacFormModalState[id];
+        if (st && st.parent) {
+          formPaciente.hidden = true;
+          if (st.next && st.next.parentElement === st.parent) st.parent.insertBefore(formPaciente, st.next);
+          else st.parent.appendChild(formPaciente);
+        }
+        document.body.removeChild(overlay);
+        if (triggerBtn) triggerBtn.setAttribute('aria-pressed', 'false');
+      } catch {}
+    }
+    modal.querySelector('#closePacFormModal').addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    // Cerrar al cancelar dentro del formulario
+    if (cancelPaciente) {
+      const onCancel = (e) => { e.preventDefault(); close(); };
+      cancelPaciente.addEventListener('click', onCancel, { once: true });
+    }
+    // Cerrar al enviar (después de la lógica de guardado)
+    formPaciente.addEventListener('submit', () => { setTimeout(close, 0); }, { once: true });
+  }
+
+  if (btnNuevoPaciente) btnNuevoPaciente.addEventListener('click', () => { openPacienteFormModal(btnNuevoPaciente); });
+
+  // Modal genérico para filtros (alineado al dashboard)
+  const filtersModalState = {};
+  function openFiltersModal(containerEl, title, triggerBtn) {
+    if (!containerEl) return;
+    const id = containerEl.id || Math.random().toString(36).slice(2);
+    filtersModalState[id] = { parent: containerEl.parentElement, next: containerEl.nextElementSibling };
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed'; overlay.style.inset = '0'; overlay.style.background = 'rgba(0,0,0,0.35)'; overlay.style.zIndex = '1000';
+    const modal = document.createElement('div');
+    modal.className = 'card';
+    modal.style.position = 'fixed'; modal.style.top = '50%'; modal.style.left = '50%'; modal.style.transform = 'translate(-50%, -50%)';
+    modal.style.width = 'min(700px, 94vw)'; modal.style.maxHeight = '85vh'; modal.style.overflow = 'auto'; modal.style.padding = '16px';
+    const header = document.createElement('div');
+    header.style.display = 'flex'; header.style.justifyContent = 'space-between'; header.style.alignItems = 'center'; header.style.gap = '8px';
+    header.innerHTML = `<div><h3 style="margin:0;">${title || 'Filtros'}</h3><div style="color:var(--c-text-light);font-size:13px;">Ajusta los criterios y aplica</div></div><button class="btn-outline" id="closeFiltersModal" title="Cerrar"><iconify-icon icon="ph:x"></iconify-icon></button>`;
+    const body = document.createElement('div');
+    containerEl.hidden = false;
+    body.appendChild(containerEl);
+    const footer = document.createElement('div');
+    footer.style.display = 'flex'; footer.style.gap = '8px'; footer.style.marginTop = '12px';
+    const applyBtn = document.createElement('button'); applyBtn.className = 'btn-primary'; applyBtn.textContent = 'Aplicar';
+    const cancelBtn = document.createElement('button'); cancelBtn.className = 'btn-outline'; cancelBtn.textContent = 'Cerrar';
+    footer.appendChild(applyBtn); footer.appendChild(cancelBtn);
+    modal.appendChild(header); modal.appendChild(body); modal.appendChild(footer);
+    overlay.appendChild(modal); document.body.appendChild(overlay);
+
+    function close() {
+      try {
+        const st = filtersModalState[id];
+        if (st && st.parent) {
+          containerEl.hidden = true;
+          if (st.next && st.next.parentElement === st.parent) st.parent.insertBefore(containerEl, st.next);
+          else st.parent.appendChild(containerEl);
+        }
+        document.body.removeChild(overlay);
+        if (triggerBtn) triggerBtn.setAttribute('aria-pressed', 'false');
+      } catch {}
+    }
+    if (triggerBtn) triggerBtn.setAttribute('aria-pressed', 'true');
+    modal.querySelector('#closeFiltersModal').addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    applyBtn.addEventListener('click', () => { close(); renderPacientes(); });
+    cancelBtn.addEventListener('click', close);
+  }
   // Filtros pacientes
   ['filtroPacNombre','filtroPacContacto'].forEach(id => {
     const el = document.getElementById(id);
@@ -133,6 +226,9 @@
     });
     renderPacientes();
   });
+  // Botón de lupa para abrir filtros en modal
+  if (togglePacFiltersBtn) togglePacFiltersBtn.addEventListener('click', () => openFiltersModal(pacFilters, 'Filtros de pacientes', togglePacFiltersBtn));
+  // Cancelar registro (cuando no está en modal) mantiene comportamiento previo
   if (cancelPaciente) cancelPaciente.addEventListener('click', () => { togglePacienteForm(false); setPacienteTabPersist(false); });
   if (formPaciente) formPaciente.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -189,5 +285,8 @@
 
   // ---------- Inicialización ----------
   renderPacientes();
+  // Interceptar tab "Registrar" para abrir modal en vez de cambiar de pestaña
+  const registrarTab = pacPanel?.querySelector('.tabs .tab[data-target="#formPaciente"]');
+  if (registrarTab) registrarTab.addEventListener('click', (e) => { e.preventDefault(); e.stopImmediatePropagation(); openPacienteFormModal(registrarTab); });
   setupPanelTabs('pacientes');
 })();

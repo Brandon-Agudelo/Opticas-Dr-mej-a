@@ -14,8 +14,7 @@
     <div class="app-layout">
       <aside class="sidebar">
         <div class="sidebar-brand">
-          <div class="logo">👓</div>
-          <span>Opticas Dr Mejia</span>
+          <img src="assets/img/logo.png" alt="Opticas Dr Mejia" class="logo-img" />
         </div>
         <nav class="menu">
           <a class="menu-item" href="dashboard.html" data-section="resumen" data-roles="admin,assistant,provider"><span class="icon"><iconify-icon icon="ph:house"></iconify-icon></span><span>Resumen</span></a>
@@ -50,9 +49,10 @@
           <section class="panel" data-section="pacientes" data-roles="admin,assistant">
             <div class="panel-header">
               <h2>Pacientes</h2>
+              <button class="btn-outline" id="togglePacFilters" title="Mostrar filtros"><iconify-icon icon="ph:magnifying-glass"></iconify-icon></button>
               <button class="btn-primary" data-roles="admin,assistant" id="btnNuevoPaciente">Registrar paciente</button>
             </div>
-            <div class="filters">
+            <div class="filters" id="pacFilters" hidden>
               <div class="field">
                 <label>Búsqueda nombre</label>
                 <input id="filtroPacNombre" type="text" placeholder="Nombre paciente" />

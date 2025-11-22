@@ -124,6 +124,7 @@ a:hover { text-decoration: underline; }
 .sidebar-brand {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
   padding: 8px;
   margin-bottom: 24px;
@@ -176,6 +177,13 @@ a:hover { text-decoration: underline; }
   position: sticky;
   top: 0;
   z-index: 10;
+}
+.topbar-brand {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
 }
 .topbar-toggle { display: none; }
 .search { flex-grow: 1; }
@@ -242,7 +250,7 @@ a:hover { text-decoration: underline; }
   object-fit: contain;
 }
 .logo-large { height: 72px; }
-.logo-topbar { height: 28px; }
+.logo-topbar { height: 34px; vertical-align: middle; }
 .brand-title { font-size: 24px; font-weight: 600; margin: 0; }
 .brand-subtitle { font-size: 16px; color: var(--c-text-light); margin: 0; }
 
@@ -300,9 +308,22 @@ a:hover { text-decoration: underline; }
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-bottom: 20px;
 }
 .panel-header h2 { margin: 0; font-size: 20px; }
+/* Maquetar contenedores de filtros para consistencia visual dentro y fuera de modal */
+.filters {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 12px;
+}
+@media (max-width: 768px) {
+  .filters { grid-template-columns: 1fr; }
+}
 .form {
   display: flex;
   flex-direction: column;
