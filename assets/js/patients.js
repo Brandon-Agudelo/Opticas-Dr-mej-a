@@ -71,13 +71,21 @@
     }
   }
   const savedCollapsed = localStorage.getItem('sidebar_collapsed') === '1';
-  applySidebarCollapsed(savedCollapsed);
+  const isMobileInit = window.matchMedia('(max-width: 960px)').matches;
+  // En desktop, forzar expandido (no colapsado) al cargar
+  applySidebarCollapsed(isMobileInit ? savedCollapsed : false);
   if (toggleSidebarBtn) toggleSidebarBtn.addEventListener('click', () => applySidebarCollapsed(!appLayout.classList.contains('collapsed')));
   if (scrim) scrim.addEventListener('click', () => applySidebarCollapsed(true));
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && scrim && scrim.classList.contains('visible')) applySidebarCollapsed(true); });
   window.addEventListener('resize', () => {
-    const collapsed = appLayout?.classList.contains('collapsed');
-    applySidebarCollapsed(!!collapsed);
+    const isMobile = window.matchMedia('(max-width: 960px)').matches;
+    // En desktop mantener expandido; en móvil respetar estado actual
+    if (!isMobile) {
+      applySidebarCollapsed(false);
+    } else {
+      const collapsed = appLayout?.classList.contains('collapsed');
+      applySidebarCollapsed(!!collapsed);
+    }
   });
 
   // ---------- Pacientes ----------
@@ -109,7 +117,8 @@
     } else {
       pacientes.forEach((p, idx) => {
         const row = document.createElement('div'); row.className = 'table-row';
-        row.innerHTML = `<div>${p.nombre}</div><div>${p.contacto || ''}</div><div>${p.notas || ''}</div><div><button class="btn-outline" data-idx="${idx}">Eliminar</button></div>`;
+        const accionesHtml = `<div class=\"acciones\"><button class=\"btn-outline btn-sm\" data-idx=\"${idx}\" title=\"Eliminar\"><iconify-icon icon=\"ph:trash\"></iconify-icon><span class=\"label\">Eliminar</span></button></div>`;
+        row.innerHTML = `<div>${p.nombre}</div><div>${p.contacto || ''}</div><div>${p.notas || ''}</div>${accionesHtml}`;
         row.querySelector('button').addEventListener('click', () => {
           data.pacientes.splice(idx, 1);
           Store.save(data); renderPacientes();

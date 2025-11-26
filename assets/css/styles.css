@@ -210,15 +210,17 @@ a:hover { text-decoration: underline; }
 .auth-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  height: 100vh;
+  height: 100dvh;
+  min-height: 100vh;
 }
 .auth-card {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 40px;
+  padding: clamp(24px, 6vw, 48px);
 }
+.auth-card .form { width: min(520px, 94vw); max-width: 520px; }
 .auth-aside {
   background: #ffffff; /* fondo blanco para resaltar el logo */
   display: flex;
@@ -301,7 +303,7 @@ a:hover { text-decoration: underline; }
 .panel {
   background: var(--c-card);
   border-radius: 12px;
-  padding: 24px;
+  padding: clamp(16px, 4vw, 24px);
   box-shadow: var(--shadow);
 }
 .panel-header {
@@ -435,6 +437,7 @@ a:hover { text-decoration: underline; }
 .table-head { font-weight: 600; color: var(--c-text-light); background: var(--c-bg); }
 /* Scroll horizontal de seguridad para tablas largas */
 .table { overflow-x: auto; }
+.table-head, .table-row { word-break: break-word; }
 .table-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr auto;
@@ -442,6 +445,22 @@ a:hover { text-decoration: underline; }
   padding: 12px 16px;
   border-bottom: 1px solid var(--c-border);
   align-items: center;
+}
+.table-row .acciones {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+.table-row .acciones .btn-outline.btn-sm {
+  padding: 6px 8px;
+}
+.table-row .acciones .btn-outline[disabled] {
+  opacity: 0.6;
+  cursor: default;
+}
+.table-row .acciones iconify-icon {
+  font-size: 18px;
 }
 .table .empty {
   text-align: center;
@@ -485,8 +504,11 @@ a:hover { text-decoration: underline; }
   }
 }
 @media (max-width: 768px) {
+  .tabs { flex-wrap: wrap; }
   .auth-layout { grid-template-columns: 1fr; }
   .auth-aside { display: none; }
+  .auth-card { align-items: stretch; }
+  .auth-card .form { width: min(520px, 92vw); margin: 0 auto; }
   .dashboard-grid { grid-template-columns: 1fr; }
   /* Órdenes: ocultar columna Estado en pantallas medianas */
   #listaOrdenes .table-head,
@@ -515,6 +537,16 @@ a:hover { text-decoration: underline; }
   #tablaOrdenesReporte .table-row { grid-template-columns: 1fr 1fr 1fr 1fr 1fr !important; }
   #tablaOrdenesReporte .table-head > div:nth-child(6),
   #tablaOrdenesReporte .table-row > div:nth-child(6) { display: none; }
+}
+@media (max-width: 480px) {
+  .form-control input { padding: 14px 0; padding-right: 44px; font-size: 15px; }
+  .form-control label span { font-size: 14px; }
+  .form-control input:focus + label span,
+  .form-control input:valid + label span { transform: translateY(-24px); }
+  .btn-primary { width: 100%; min-height: 44px; font-size: 15px; }
+  .actions-row { flex-wrap: wrap; gap: 8px; }
+  .tab { padding: 6px 10px; font-size: 14px; }
+  .field input, .field select, .field textarea { min-height: 40px; }
 }
 @media (max-width: 560px) {
   /* Órdenes: mostrar solo Paciente y Acciones en pantallas pequeñas */
@@ -912,6 +944,10 @@ a:hover { text-decoration: underline; }
     font-size: 11px;
     margin: 0 1px;
   }
+  /* Compactar acciones en filas de órdenes */
+  .table-row .acciones { gap: 4px; }
+  .table-row .acciones .label { display: none; }
+  .table-row .acciones iconify-icon { font-size: 18px; }
 }
 
 /* Fix para el header en móviles */

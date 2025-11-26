@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="assets/css/styles.css?v=20251111" />
     <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
   </head>
   <body class="theme">
     <div class="app-layout">
@@ -46,7 +47,6 @@
               <option value="admin">Administrador</option>
               <option value="provider">Proveedor</option>
             </select>
-            <button id="resetDemoBtn" class="btn-outline" title="Inicializar datos demo">Inicializar demo</button>
             <button id="logoutBtn" class="btn-outline">Cerrar sesión</button>
           </div>
         </header>
@@ -217,6 +217,10 @@
               </div>
               <div class="field"><label>Monto</label><input id="pagoMonto" type="number" step="0.01" min="0" required /><small class="hint" id="pagoMontoHint"></small></div>
               <div class="field"><label>Comprobante</label><input id="pagoComprobante" placeholder="Nº recibo / ref." /><small class="hint" id="pagoComprobanteHint"></small></div>
+              <div class="field"><label>Adjuntar comprobante</label>
+                <input id="pagoComprobanteFile" type="file" accept="application/pdf,image/*" />
+                <small class="hint" id="pagoComprobanteFileHint">PDF o imagen (opcional)</small>
+              </div>
               <div style="display:flex; gap:8px;">
                 <button class="btn-primary" type="submit">Guardar pago</button>
                 <button class="btn-outline" type="button" id="cancelPago">Cancelar</button>
@@ -252,7 +256,6 @@
               <div class="field"><label>Hasta</label><input type="date" id="reporteHasta" /></div>
               <div class="field"><label>Proveedor</label><select id="reporteProveedor"><option value="">Todos</option></select></div>
               <div class="field field-actions">
-                <button class="btn-primary" id="btnGenerarReporte">Generar reporte</button>
                 <button class="btn-outline" id="btnLimpiarReporte">Limpiar</button>
               </div>
             </div>
@@ -269,12 +272,12 @@
             </div>
             <div class="panel-subheader" style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
               <h3>Pagos filtrados</h3>
-              <button class="btn-outline" id="exportPagosCSV">Exportar CSV</button>
+              <button class="btn-outline" id="exportPagosCSV">Exportar Excel</button>
             </div>
             <div class="table" id="tablaPagosReporte"></div>
             <div class="panel-subheader" style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;">
               <h3>Órdenes filtradas</h3>
-              <button class="btn-outline" id="exportOrdenesCSV">Exportar CSV</button>
+              <button class="btn-outline" id="exportOrdenesCSV">Exportar Excel</button>
             </div>
             <div class="table" id="tablaOrdenesReporte"></div>
           </section>

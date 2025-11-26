@@ -143,13 +143,21 @@
     }
   }
   const savedCollapsed = localStorage.getItem('sidebar_collapsed') === '1';
-  applySidebarCollapsed(savedCollapsed);
+  const isMobileInit = window.matchMedia('(max-width: 960px)').matches;
+  // En desktop, forzar expandido (no colapsado) al cargar
+  applySidebarCollapsed(isMobileInit ? savedCollapsed : false);
   if (toggleSidebarBtn) toggleSidebarBtn.addEventListener('click', () => applySidebarCollapsed(!appLayout.classList.contains('collapsed')));
   if (scrim) scrim.addEventListener('click', () => applySidebarCollapsed(true));
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && scrim && scrim.classList.contains('visible')) applySidebarCollapsed(true); });
   window.addEventListener('resize', () => {
-    const collapsed = appLayout?.classList.contains('collapsed');
-    applySidebarCollapsed(!!collapsed);
+    const isMobile = window.matchMedia('(max-width: 960px)').matches;
+    // En desktop mantener expandido; en móvil respetar estado actual
+    if (!isMobile) {
+      applySidebarCollapsed(false);
+    } else {
+      const collapsed = appLayout?.classList.contains('collapsed');
+      applySidebarCollapsed(!!collapsed);
+    }
   });
 
   // ---------- KPIs y gráfico ----------
@@ -246,6 +254,7 @@
   const pagoOrdenSelect = document.getElementById('pagoOrden');
   const pagoMontoInput = document.getElementById('pagoMonto');
   const pagoComprobanteInput = document.getElementById('pagoComprobante');
+  const pagoComprobanteFileInput = document.getElementById('pagoComprobanteFile');
 
   function fechaCorta(ts) {
     const d = new Date(ts);
@@ -278,8 +287,11 @@
     } else {
       data.pagos.forEach((p, idx) => {
         const row = document.createElement('div'); row.className = 'table-row'; row.style.gridTemplateColumns = '1fr 1fr 1fr auto';
-        row.innerHTML = `<div>#${p.ordenId}</div><div>$${Number(p.monto).toFixed(2)}</div><div>${fechaCorta(p.fecha)}</div><div><button class="btn-outline" data-idx="${idx}">Eliminar</button></div>`;
-        row.querySelector('button').addEventListener('click', () => {
+        const verBtnHtml = p.comprobanteArchivo ? `<button class="btn-outline btn-sm" data-view="${idx}" title="Ver comprobante"><iconify-icon icon="ph:paperclip"></iconify-icon><span class="label">Ver</span></button>` : '';
+        const accionesHtml = `<div class="acciones">${verBtnHtml}<button class="btn-outline btn-sm" data-idx="${idx}" title="Eliminar"><iconify-icon icon="ph:trash"></iconify-icon><span class="label">Eliminar</span></button></div>`;
+        row.innerHTML = `<div>#${p.ordenId}</div><div>$${Number(p.monto).toFixed(2)}</div><div>${fechaCorta(p.fecha)}</div>${accionesHtml}`;
+        const delBtn = row.querySelector('button[data-idx]');
+        if (delBtn) delBtn.addEventListener('click', () => {
           const ordenId = data.pagos[idx].ordenId;
           // Revertir pagada en la orden asociada
           const ordIdx = data.ordenes.findIndex(o => o.id === ordenId);
@@ -287,6 +299,17 @@
           data.pagos.splice(idx, 1);
           Store.save(data);
           renderPagos(); updateKPIsAndChart(); updateCharts();
+        });
+        const viewBtn = row.querySelector('button[data-view]');
+        if (viewBtn) viewBtn.addEventListener('click', () => {
+          const pago = data.pagos[idx];
+          const url = pago?.comprobanteArchivo?.dataUrl;
+          if (url) {
+            const a = document.createElement('a');
+            a.href = url; a.target = '_blank'; a.rel = 'noopener';
+            a.download = pago.comprobanteArchivo.name || 'comprobante';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          }
         });
         listaPagos.appendChild(row);
       });
@@ -307,18 +330,36 @@
   function setPagoTabPersist(show) { localStorage.setItem('tab_pagos', show ? '#formPago' : '#listaPagos'); }
   if (btnNuevoPago) btnNuevoPago.addEventListener('click', () => { togglePagoForm(true); setPagoTabPersist(true); refreshOrdenOptionsForPagos(); });
   if (cancelPago) cancelPago.addEventListener('click', () => { togglePagoForm(false); setPagoTabPersist(false); });
-  if (formPago) formPago.addEventListener('submit', (e) => {
+  async function fileToDataURL(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  if (formPago) formPago.addEventListener('submit', async (e) => {
     e.preventDefault();
     const ordenId = pagoOrdenSelect.value;
     const monto = Number(pagoMontoInput.value);
     markField('pagoOrden', !!ordenId, 'Debes seleccionar una orden');
     markField('pagoMonto', monto > 0, 'Monto debe ser mayor que 0');
     if (!ordenId || !(monto > 0)) return;
+    let comprobanteArchivo = null;
+    try {
+      const file = pagoComprobanteFileInput && pagoComprobanteFileInput.files && pagoComprobanteFileInput.files[0];
+      if (file) {
+        const dataUrl = await fileToDataURL(file);
+        comprobanteArchivo = { name: file.name, type: file.type, size: file.size, dataUrl };
+      }
+    } catch (_) {}
     const pago = {
       id: Date.now(),
       ordenId: Number(ordenId),
       monto,
       comprobante: (pagoComprobanteInput.value || '').trim() || null,
+      comprobanteArchivo,
       fecha: Date.now(),
     };
     data.pagos.push(pago);
@@ -779,7 +820,26 @@
     } else {
       ordenes.forEach((o, idx) => {
         const row = document.createElement('div'); row.className = 'table-row'; row.style.gridTemplateColumns = '1fr 1fr 1fr 1fr auto';
-        row.innerHTML = `<div>${o.paciente}</div><div>${providerNameById(o.proveedorId)}</div><div>${o.estado}</div><div>${o.pagada ? 'Sí' : 'No'}</div><div><button class="btn-outline" data-action="view" data-idx="${idx}" title="Ver detalles"><iconify-icon icon="ph:eye"></iconify-icon></button> <button class="btn-outline" data-action="pay" data-idx="${idx}">${o.pagada ? 'Pagada' : 'Marcar pagada'}</button> <button class="btn-outline" data-action="del" data-idx="${idx}">Eliminar</button></div>`;
+        const accionesHtml = (() => {
+          const payDisabled = o.pagada ? 'disabled' : '';
+          const payTitle = o.pagada ? 'Pagada' : 'Marcar pagada';
+          const payLabel = o.pagada ? 'Pagada' : 'Pagar';
+          return `<div class="acciones">
+            <button class="btn-outline btn-sm" data-action="view" data-idx="${idx}" title="Ver detalles">
+              <iconify-icon icon="ph:eye"></iconify-icon>
+              <span class="label">Ver</span>
+            </button>
+            <button class="btn-outline btn-sm" data-action="pay" data-idx="${idx}" title="${payTitle}" ${payDisabled}>
+              <iconify-icon icon="ph:check-circle"></iconify-icon>
+              <span class="label">${payLabel}</span>
+            </button>
+            <button class="btn-outline btn-sm" data-action="del" data-idx="${idx}" title="Eliminar">
+              <iconify-icon icon="ph:trash"></iconify-icon>
+              <span class="label">Eliminar</span>
+            </button>
+          </div>`;
+        })();
+        row.innerHTML = `<div>${o.paciente}</div><div>${providerNameById(o.proveedorId)}</div><div>${o.estado}</div><div>${o.pagada ? 'Sí' : 'No'}</div>${accionesHtml}`;
         const viewBtn = row.querySelector('button[data-action="view"]');
         const payBtn = row.querySelector('button[data-action="pay"]');
         const delBtn = row.querySelector('button[data-action="del"]');
@@ -997,7 +1057,8 @@
     } else {
       proveedores.forEach((p, idx) => {
         const row = document.createElement('div'); row.className = 'table-row';
-        row.innerHTML = `<div>${p.nombre}</div><div>${p.contacto || ''}</div><div>${p.notas || ''}</div><div><button class="btn-outline" data-idx="${idx}">Eliminar</button></div>`;
+        const accionesHtml = `<div class=\"acciones\"><button class=\"btn-outline btn-sm\" data-idx=\"${idx}\" title=\"Eliminar\"><iconify-icon icon=\"ph:trash\"></iconify-icon><span class=\"label\">Eliminar</span></button></div>`;
+        row.innerHTML = `<div>${p.nombre}</div><div>${p.contacto || ''}</div><div>${p.notas || ''}</div>${accionesHtml}`;
         row.querySelector('button').addEventListener('click', () => {
           const nombreEliminado = p.nombre;
           data.proveedores.splice(idx, 1);
@@ -1073,7 +1134,8 @@
     } else {
       arr.forEach((n, idx) => {
         const row = document.createElement('div'); row.className = 'table-row'; row.style.gridTemplateColumns = '1fr 1fr 2fr auto';
-        row.innerHTML = `<div>${fechaCorta(n.fecha)}</div><div>${n.para}</div><div>${n.mensaje}</div><div><button class="btn-outline" data-idx="${idx}">Eliminar</button></div>`;
+        const accionesHtml = `<div class=\"acciones\"><button class=\"btn-outline btn-sm\" data-idx=\"${idx}\" title=\"Eliminar\"><iconify-icon icon=\"ph:trash\"></iconify-icon><span class=\"label\">Eliminar</span></button></div>`;
+        row.innerHTML = `<div>${fechaCorta(n.fecha)}</div><div>${n.para}</div><div>${n.mensaje}</div>${accionesHtml}`;
         row.querySelector('button').addEventListener('click', () => {
           data.notificaciones.splice(idx, 1);
           Store.save(data);
@@ -1150,19 +1212,15 @@
     return true;
   }
 
-  function buildCSV(rows) {
-    const escape = (v) => {
-      const s = v == null ? '' : String(v);
-      return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
-    };
-    return rows.map(r => r.map(escape).join(',')).join('\n');
-  }
-  function downloadCSV(filename, rows) {
-    const blob = new Blob([buildCSV(rows)], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = filename; document.body.appendChild(a); a.click();
-    document.body.removeChild(a); URL.revokeObjectURL(url);
+  function downloadExcel(filename, rows, sheetName = 'Reporte') {
+    if (typeof XLSX === 'undefined' || !XLSX || !XLSX.utils) {
+      alert('No se pudo cargar la librería para Excel.');
+      return;
+    }
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    XLSX.writeFile(wb, filename);
   }
 
   function renderTablaPagos(pagos) {
@@ -1241,12 +1299,12 @@
     const btnPagos = document.getElementById('exportPagosCSV');
     if (btnPagos) btnPagos.onclick = () => {
       const rows = [ ['Orden','Proveedor','Monto','Fecha','Comprobante'], ...pagosFiltrados.map(p => [ `#${p.ordenId}`, providerNameById(p.proveedorId), Number(p.monto).toFixed(2), fechaCorta(p.fecha), p.comprobante || '' ]) ];
-      downloadCSV('pagos_reporte.csv', rows);
+      downloadExcel('pagos_reporte.xlsx', rows, 'Pagos');
     };
     const btnOrd = document.getElementById('exportOrdenesCSV');
     if (btnOrd) btnOrd.onclick = () => {
       const rows = [ ['ID','Paciente','Proveedor','Estado','Pagada','Fecha'], ...ordenesFiltradas.map(o => { const ts = (o.fecha || o.createdAt || o.id || Date.now()); return [ `#${o.id}`, o.paciente, providerNameById(o.proveedorId), o.estado, o.pagada ? 'Sí' : 'No', fechaCorta(ts) ]; }) ];
-      downloadCSV('ordenes_reporte.csv', rows);
+      downloadExcel('ordenes_reporte.xlsx', rows, 'Ordenes');
     };
   }
 
