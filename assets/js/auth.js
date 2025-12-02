@@ -46,7 +46,6 @@
       const username = usernameInput.value;
       const password = passwordInput.value;
       const role = roleInput.value;
-      // El checkbox Recordarme fue removido del HTML; si no existe, asumir false
       const remember = (rememberInput && rememberInput.checked) || false;
 
       // Basic validation
