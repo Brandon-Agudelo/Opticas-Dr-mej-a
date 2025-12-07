@@ -911,23 +911,47 @@ a:hover { text-decoration: underline; }
   }
 }
 
-/* Fix para tablas en móviles */
-@media (max-width: 768px) {
-  .table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin: 0 -16px;
-    padding: 0 16px;
-  }
-  
-  .table {
-    min-width: 100%;
-  }
-  
-  .table-head,
-  .table-row {
-    min-width: 100%;
-  }
+/* Fix para tablas en móviles y badges */
+.table-container {
+  overflow-x: auto; /* Habilitar scroll horizontal */
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  padding-bottom: 8px; /* Espacio para la barra de scroll */
+}
+
+.table {
+  min-width: 1200px; /* Forzar ancho mínimo para que quepa todo sin aplastarse */
+  width: 100%;
+  border-collapse: separate; 
+  border-spacing: 0 8px; /* Espaciado entre filas */
+}
+
+.table-row {
+  display: grid;
+  /* Las columnas se definen inline en el HTML, pero aseguramos alineación vertical */
+  align-items: center; 
+  padding: 12px 16px;
+  gap: 16px; /* Separación horizontal consistente */
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  white-space: nowrap; /* Evitar que textos largos rompan la línea */
+}
+
+.state-badge {
+  white-space: nowrap; /* El badge nunca debe romperse en dos líneas */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px; /* Ancho mínimo decente */
+  padding: 6px 12px;
+  height: auto; /* Permitir que crezca si es necesario, aunque con nowrap no debería */
+}
+
+/* Ajuste específico para la tabla de órdenes donde hay badges */
+#listaOrdenes .table-row,
+#listaOrdenesSede .table-row {
+  min-width: max-content; /* La fila ocupará lo que necesite su contenido */
 }
 
 /* Mejorar los botones de acción en móviles */
@@ -1066,3 +1090,31 @@ a:hover { text-decoration: underline; }
   align-items: center;
   color: var(--c-fg);
 }
+/* Chips de estado para órdenes */
+.state-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.2;
+  color: #fff;
+  background: var(--bg, #6b7280);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    0 1px 2px rgba(0,0,0,0.12);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.state-badge::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.9);
+  mix-blend-mode: soft-light;
+}
+
+/* Variación compacta cuando se usa dentro de celdas estrechas */
+.table-row .state-badge { padding: 3px 8px; font-weight: 600; }

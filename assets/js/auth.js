@@ -8,67 +8,55 @@
   const rememberInput = document.getElementById('remember');
   const errorMsg = document.getElementById('errorMsg');
 
-  // ---------- Modo demo (auto-autenticación) ----------
-  try {
-    const url = new URL(window.location.href);
-    const isDemo = url.searchParams.get('demo') === '1';
-    if (isDemo) {
-      const demoTokenExists = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
-      if (!demoTokenExists) {
-        const token = `fake_token_${Date.now()}`;
-        sessionStorage.setItem('auth_token', token);
-        sessionStorage.setItem('auth_role', 'assistant');
-      }
-    }
-  } catch (_) {
-    // Ignorar errores de URL en entornos no estándar
-  }
-
   // ---------- Check authentication status ----------
   const isAuthenticated = () => {
     return localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
   };
-
-  // Redirect to login if not authenticated
-  if (!isAuthenticated() && !window.location.pathname.endsWith('index.html')) {
-    window.location.href = 'index.html';
-  }
 
   // Si ya estás autenticado y estás en el login, redirige al dashboard
   if (isAuthenticated() && (window.location.pathname.endsWith('index.html') || window.location.pathname === '/')) {
     window.location.href = 'dashboard.html#resumen';
   }
 
-  // ---------- Login ----------
+  // ---------- Login (integrado con backend) ----------
   if (loginForm) {
     loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const username = usernameInput.value;
-      const password = passwordInput.value;
-      const role = roleInput.value;
+      const username = usernameInput.value?.trim();
+      const password = passwordInput.value || '';
+      const selectedRole = roleInput?.value || 'assistant';
       const remember = (rememberInput && rememberInput.checked) || false;
+      const submitBtn = loginForm.querySelector('button[type="submit"]');
 
-      // Basic validation
-      if (!username || !password || !role) {
-        errorMsg.textContent = 'Por favor, completa todos los campos.';
+      // Validación básica
+      if (!username || !password) {
+        errorMsg.textContent = 'Por favor, completa usuario y contraseña.';
         errorMsg.hidden = false;
         return;
       }
+      errorMsg.hidden = true;
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Entrando…'; }
 
-      // Simulate authentication
-      const token = `fake_token_${Date.now()}`;
-      if (remember) {
-        localStorage.setItem('auth_token', token);
-        localStorage.setItem('auth_role', role);
-        localStorage.setItem('auth_username', username);
-      } else {
-        sessionStorage.setItem('auth_token', token);
-        sessionStorage.setItem('auth_role', role);
-        sessionStorage.setItem('auth_username', username);
+      // En modo offline, permitir acceso directo sin contactar backend
+      try {
+        const stor = remember ? localStorage : sessionStorage;
+        const roleSimple = selectedRole || 'assistant';
+        const token = `fake_token_${Date.now()}`;
+        stor.setItem('auth_user', username || 'demo');
+        stor.setItem('auth_username', username || 'demo');
+        stor.setItem('auth_role', roleSimple);
+        stor.setItem('auth_token', token);
+        window.location.href = 'dashboard.html#resumen';
+      } catch (error) {
+        console.error('[auth] offline error: ', error);
+        errorMsg.textContent = 'No se pudo iniciar sesión en modo offline';
+        errorMsg.hidden = false;
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Entrar';
+        }
       }
-
-      // Redirect to dashboard (sección Resumen)
-      window.location.href = 'dashboard.html#resumen';
     });
   }
 
