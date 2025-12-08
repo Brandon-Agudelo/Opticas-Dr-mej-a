@@ -28,7 +28,7 @@
           <a class="menu-item" href="dashboard.html#estadisticas-sede" data-section="estadisticas-sede" data-roles="admin"><span class="icon"><iconify-icon icon="ph:chart-pie-slice"></iconify-icon></span><span>Estadísticas por sede</span></a>
           <a class="menu-item" href="dashboard.html#pagos" data-section="pagos" data-roles="admin,assistant"><span class="icon"><iconify-icon icon="ph:credit-card"></iconify-icon></span><span>Pagos</span></a>
           <a class="menu-item" href="dashboard.html#usuarios" data-section="usuarios" data-roles="admin"><span class="icon"><iconify-icon icon="ph:user-list"></iconify-icon></span><span>Usuarios</span></a>
-          <a class="menu-item" href="dashboard.html#proveedores" data-section="proveedores" data-roles="admin,assistant"><span class="icon"><iconify-icon icon="ph:factory"></iconify-icon></span><span>Proveedores</span></a>
+          <a class="menu-item" href="dashboard.html#proveedores" data-section="proveedores" data-roles="admin"><span class="icon"><iconify-icon icon="ph:factory"></iconify-icon></span><span>Proveedores</span></a>
           
           <!-- Módulos auxiliares -->
           <a class="menu-item" href="dashboard.html#sedes" data-section="sedes" data-roles="admin"><span class="icon"><iconify-icon icon="ph:buildings"></iconify-icon></span><span>Sedes</span></a>
@@ -152,11 +152,11 @@
             <div class="table" id="listaUsuarios"></div>
           </section>
           <!-- Panel: Proveedores -->
-          <section class="panel" data-section="proveedores" data-roles="admin,assistant" hidden>
+          <section class="panel" data-section="proveedores" data-roles="admin" hidden>
             <div class="panel-header">
               <h2>Proveedores</h2>
               <button class="btn-outline" id="toggleProvFilters" title="Mostrar filtros"><iconify-icon icon="ph:magnifying-glass"></iconify-icon></button>
-              <button class="btn-primary" data-roles="admin,assistant" id="btnNuevoProveedor">Registrar proveedor</button>
+              <button class="btn-primary" data-roles="admin" id="btnNuevoProveedor">Registrar proveedor</button>
             </div>
             <div class="filters" id="provFilters" hidden>
               <div class="field">
@@ -173,9 +173,9 @@
             </div>
             <div class="tabs">
               <a href="#" class="tab active" data-target="#listaProveedores">Listado</a>
-              <a href="#" class="tab" data-target="#formProveedor" data-roles="admin,assistant">Registrar</a>
+              <a href="#" class="tab" data-target="#formProveedor" data-roles="admin">Registrar</a>
             </div>
-            <form id="formProveedor" class="form" data-roles="admin,assistant" hidden>
+            <form id="formProveedor" class="form" data-roles="admin" hidden>
               <div class="field"><label>NIT</label><input id="provNit" required /><small class="hint" id="provNitHint"></small></div>
               <div class="field"><label>Nombre</label><input id="provName" required /><small class="hint" id="provNameHint"></small></div>
               <div class="field"><label>Dirección</label><input id="provAddress" required /><small class="hint" id="provAddressHint"></small></div>

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ópticas Dr. Mejía – Órdenes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/styles.css?v=20251111" />
+    <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+    <script>window.API_BASE_URL = 'http://25.17.249.198:8081/drmejia';</script>
+    <script src="assets/js/api.js" defer></script>
+  </head>
+  <body class="theme">
+    <div class="app-layout">
+      <aside class="sidebar">
+        <div class="sidebar-brand"><img src="assets/img/logo.png" alt="Ópticas Dr. Mejía" class="logo-img" /></div>
+        <nav class="menu">
+          <a class="menu-item" href="dashboard-core.html" data-section="resumen" data-roles="admin,assistant,provider"><span class="icon"><iconify-icon icon="ph:house"></iconify-icon></span><span>Dashboard</span></a>
+          <a class="menu-item active" href="dashboard-ordenes.html#ordenes" data-section="ordenes" data-roles="admin,assistant,provider"><span class="icon"><iconify-icon icon="ph:files"></iconify-icon></span><span>Consolidado de Órdenes</span></a>
+          <a class="menu-item" href="dashboard-ordenes.html#ordenes-sede" data-section="ordenes-sede" data-roles="admin"><span class="icon"><iconify-icon icon="ph:buildings"></iconify-icon></span><span>Órdenes por sede</span></a>
+          <a class="menu-item" href="dashboard-admin.html#estadisticas-sede" data-section="estadisticas-sede" data-roles="admin"><span class="icon"><iconify-icon icon="ph:chart-pie-slice"></iconify-icon></span><span>Estadísticas por sede</span></a>
+          <a class="menu-item" href="dashboard-admin.html#pagos" data-section="pagos" data-roles="admin,assistant"><span class="icon"><iconify-icon icon="ph:credit-card"></iconify-icon></span><span>Pagos</span></a>
+          <a class="menu-item" href="dashboard-admin.html#usuarios" data-section="usuarios" data-roles="admin"><span class="icon"><iconify-icon icon="ph:user-list"></iconify-icon></span><span>Usuarios</span></a>
+          <a class="menu-item" href="dashboard-admin.html#proveedores" data-section="proveedores" data-roles="admin"><span class="icon"><iconify-icon icon="ph:factory"></iconify-icon></span><span>Proveedores</span></a>
+          <a class="menu-item" href="dashboard-admin.html#sedes" data-section="sedes" data-roles="admin"><span class="icon"><iconify-icon icon="ph:buildings"></iconify-icon></span><span>Sedes</span></a>
+          <a class="menu-item" href="dashboard-ordenes.html#pendientes" data-section="pendientes" data-roles="admin,assistant,provider"><span class="icon"><iconify-icon icon="ph:hourglass"></iconify-icon></span><span>Pendientes</span></a>
+          <a class="menu-item" href="dashboard-admin.html#reportes" data-section="reportes" data-roles="admin,assistant"><span class="icon"><iconify-icon icon="ph:chart-bar"></iconify-icon></span><span>Reportes</span></a>
+          <a class="menu-item" href="dashboard-core.html#notificaciones" data-section="notificaciones" data-roles="admin,assistant,provider"><span class="icon"><iconify-icon icon="ph:bell"></iconify-icon></span><span>Notificaciones</span></a>
+        </nav>
+      </aside>
+      <div id="appScrim" class="app-scrim" aria-hidden="true"></div>
+      <div class="content">
+        <header class="topbar">
+          <button id="toggleSidebar" class="btn-outline topbar-toggle" aria-label="Alternar menú"><iconify-icon icon="ph:list"></iconify-icon></button>
+          <a href="dashboard-ordenes.html#ordenes" class="topbar-brand" aria-label="Inicio"><img src="assets/img/logo.png" alt="Ópticas Dr. Mejía" class="logo-img logo-topbar" /></a>
+          <div class="topbar-actions">
+            <select id="roleSelector" title="Rol">
+              <option value="assistant">Asistente</option>
+              <option value="admin">Administrador</option>
+              <option value="provider">Proveedor</option>
+            </select>
+            <button id="logoutBtn" class="btn-outline">Cerrar sesión</button>
+          </div>
+        </header>
+        <main class="main" id="main">
+          <section class="panel" data-section="ordenes" data-roles="admin,assistant,provider">
+            <div class="panel-header">
+              <h2>Órdenes</h2>
+              <button class="btn-primary" data-roles="admin,assistant" id="btnNuevaOrden">Crear orden</button>
+            </div>
+            <div class="filters" id="ordenFilters">
+              <div class="field"><label>Paciente</label><input id="filtroOrdenPaciente" placeholder="Nombre" /></div>
+              <div class="field"><label>Proveedor</label><select id="filtroOrdenProveedor"><option value="">Todos</option></select></div>
+              <div class="field"><label>Estado</label>
+                <select id="filtroOrdenEstado"><option value="">Todos</option><option value="CREATED">Crear</option><option value="SENT">Enviado a lab</option><option value="IN_PROGRESS">En proceso</option><option value="RETURN_ROUTE">Retorno en ruta</option><option value="RECEIVED">Recibido</option><option value="COMPLETED">Completada</option><option value="CANCELLED">Anulada</option></select>
+              </div>
+              <div class="field"><label>Fecha</label><input id="filtroOrdenFecha" type="date" /></div>
+              <div class="field" style="align-self:flex-end;"><button id="limpiarFiltrosOrden" class="btn-outline btn-sm">Limpiar filtros</button></div>
+            </div>
+            <div class="tabs">
+              <a href="#" class="tab active" data-target="#listaOrdenes">Listado</a>
+              <a href="#" class="tab" data-target="#formOrden" data-roles="admin,assistant">Crear</a>
+            </div>
+            <form id="formOrden" class="form" data-roles="admin,assistant" hidden>
+              <div id="ordenFieldsRow" style="display:grid;grid-template-columns:repeat(4, minmax(230px, 1fr));gap:10px;overflow:visible;padding-bottom:8px">
+                <div class="field"><label>Consecutivo sistema #</label><input id="ordConsecutivo" /><small class="hint" id="ordConsecutivoHint"></small></div>
+                <div class="field"><label>Orden #</label><input id="ordNumero" /><small class="hint" id="ordNumeroHint"></small></div>
+                <div class="field"><label>Fecha envío</label><input id="ordFecha" type="date" /><small class="hint" id="ordFechaHint"></small></div>
+                <div class="field"><label>Fecha entrega (opcional)</label><input id="ordFechaEntrega" type="date" /><small class="hint" id="ordFechaEntregaHint"></small></div>
+                <div class="field"><label>Ciudad/Municipio</label><input id="ordCiudad" /><small class="hint" id="ordCiudadHint"></small></div>
+                <div class="field"><label>Sede</label><select id="ordHeadquarter"><option value="">Sin sede</option></select><small class="hint" id="ordHeadquarterHint"></small></div>
+                <div class="field"><label>Empresa/Convenio/Seg</label><input id="ordEmpresa" /><small class="hint" id="ordEmpresaHint"></small></div>
+                <div class="field"><label>Nombre del paciente</label><input id="ordPaciente" required /><small class="hint" id="ordPacienteHint"></small></div>
+                <div class="field"><label>CC del paciente</label><input id="ordPacienteCC" /><small class="hint" id="ordPacienteCCHint"></small></div>
+                <div class="field"><label>Proveedor</label><select id="ordProveedor" required></select><small class="hint" id="ordProveedorHint"></small></div>
+                <div class="field"><label>Estado</label>
+                  <select id="ordEstado"><option value="CREATED">Crear</option><option value="SENT">Enviado a lab</option><option value="IN_PROGRESS">En proceso</option><option value="RETURN_ROUTE">Retorno en ruta</option><option value="RECEIVED">Recibido</option><option value="COMPLETED">Completada</option><option value="CANCELLED">Anulada</option></select>
+                </div>
+                <div class="field"><label>Clase de lentes</label><select id="ordClaseLentes"><option value="progresivo">Progresivo</option><option value="monofocal">Monofocal</option><option value="bifocal">Bifocal</option></select><small class="hint" id="ordClaseLentesHint"></small></div>
+                <div class="field"><label>Tipo Lente (Asesor)</label><input id="ordTipoLenteFiltros" /><small class="hint" id="ordTipoLenteFiltrosHint"></small></div>
+                <div class="field"><label>Tipo Lente (Admon)</label><input id="ordTipoLenteAdmon" /><small class="hint" id="ordTipoLenteAdmonHint"></small></div>
+                <div class="field"><label>OD</label><input id="ordOD" /><small class="hint" id="ordODHint"></small></div>
+                <div class="field"><label>OI</label><input id="ordOI" /><small class="hint" id="ordOIHint"></small></div>
+                <div class="field"><label>ADD</label><input id="ordADD" /><small class="hint" id="ordADDHint"></small></div>
+                <div class="field"><label>DP y ALT</label><input id="ordDPALT" /><small class="hint" id="ordDPALTHint"></small></div>
+                <div class="field"><label>Información adicional</label><input id="ordInfoAdicional" /><small class="hint" id="ordInfoAdicionalHint"></small></div>
+                <div class="field"><label>Tipo de montura</label><input id="ordTipoMontura" /><small class="hint" id="ordTipoMonturaHint"></small></div>
+                <div class="field"><label>Observaciones</label><input id="ordObservaciones" /><small class="hint" id="ordObservacionesHint"></small></div>
+                <div class="field"><label>Tiempo de control</label><input id="ordTiempoControl" type="date" /><small class="hint" id="ordTiempoControlHint"></small></div>
+                <div class="field"><label>Factura Venta Dr Mejia #</label><input id="ordFacturaDrMejia" /><small class="hint" id="ordFacturaDrMejiaHint"></small></div>
+                <div class="field"><label>Factura Venta Laboratorio #</label><input id="ordFacturaLab" /><small class="hint" id="ordFacturaLabHint"></small></div>
+                <div class="field"><label>Precio Venta</label><input id="ordPrecioVenta" type="text" placeholder="$ 0" /><small class="hint" id="ordPrecioVentaHint"></small></div>
+                <div class="field"><label>Precio Costo</label><input id="ordPrecioCosto" type="text" placeholder="$ 0" /><small class="hint" id="ordPrecioCostoHint"></small></div>
+                <div class="field"><label>Recibido por</label><input id="ordRecibidoPor" /><small class="hint" id="ordRecibidoPorHint"></small></div>
+              </div>
+              <div class="field field-actions"><button class="btn-primary" id="saveOrden">Guardar</button><button class="btn-outline" id="cancelOrden">Cancelar</button></div>
+            </form>
+            <div class="table" id="listaOrdenes"></div>
+          </section>
+          <section class="panel" data-section="ordenes-sede" data-roles="admin" hidden>
+            <div class="panel-header"><h2>Órdenes por sede</h2></div>
+            <div class="filters"><div class="field"><label>Sede</label><select id="filtroSedeOrdenes"><option value="">Selecciona una sede...</option></select></div><div class="field field-actions"><button class="btn-primary" id="btnFiltrarSedeOrdenes">Filtrar</button></div></div>
+            <div id="resumenSedeOrdenes" class="kpi-grid" style="margin-top:16px"></div>
+            <div class="table" id="listaOrdenesSede"><div class="empty">Selecciona una sede para ver sus órdenes.</div></div>
+          </section>
+        </main>
+      </div>
+    </div>
+    <script>
+      (function(){
+        const t = setTimeout(function(){ if (!window.__appInitDone) { var el = document.getElementById('bootFallback'); if (el) el.removeAttribute('hidden'); } }, 1200);
+        window.addEventListener('load', function(){ if (window.__appInitDone) { var el = document.getElementById('bootFallback'); if (el) el.setAttribute('hidden',''); clearTimeout(t); } });
+      })();
+    </script>
+    <script src="assets/js/auth.js?v=20251207.2" defer></script>
+    <script src="assets/js/dashboard.ordenes.js?v=20251207.2" defer></script>
+  </body>
+</html>
