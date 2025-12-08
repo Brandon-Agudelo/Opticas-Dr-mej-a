@@ -1227,6 +1227,12 @@
     modal.style.padding = '16px';
     const monto = (data.pagos || []).filter(p => Number(p.ordenId) === Number(o.id)).reduce((s, p) => s + Number(p.monto || 0), 0);
     const fechaStr = o.fecha ? new Date(o.fecha).toLocaleDateString() : '-';
+    const role = getRole();
+    const isProvider = role === 'provider';
+    const showAsesor = !isProvider;
+    const showAdmon = (role === 'admin') || isProvider;
+    const showPrecioVenta = !isProvider;
+    const showPrecioCosto = (role === 'admin') || isProvider;
     modal.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
         <div>
@@ -1255,10 +1261,8 @@
             <div style="font-weight:600;">Clase de lentes</div>
             <div style="color:var(--c-text-light);">${o.claseLentes || '-'}</div>
           </div>
-          <div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;">
-            <div style="font-weight:600;">Tipo de lente y filtros</div>
-            <div style="color:var(--c-text-light);">${o.tipoLenteFiltros || '-'}</div>
-          </div>
+          ${showAdmon ? `<div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;"><div style="font-weight:600;">Tipo de lente (Admon)</div><div style="color:var(--c-text-light);">${o.tipoLenteAdmon || '-'}</div></div>` : ''}
+          ${showAsesor ? `<div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;"><div style="font-weight:600;">Tipo de lente y filtros</div><div style="color:var(--c-text-light);">${o.tipoLenteFiltros || '-'}</div></div>` : ''}
         </div>
       </div>
 
@@ -1323,12 +1327,12 @@
       { header: 'Proveedor', width: '140px', show: true },
       { header: 'Sede', width: '110px', show: true },
       { header: 'Tipo Lente (Asesor)', width: '150px', show: !isProvider },
-      { header: 'Tipo Lente (Admon)', width: '150px', show: (role === 'admin') },
+      { header: 'Tipo Lente (Admon)', width: '150px', show: (role === 'admin') || isProvider },
       { header: 'Fórmula', width: '140px', show: true },
       { header: 'Estado', width: '120px', show: true },
       { header: 'Fecha estado', width: '120px', show: (role === 'admin') },
       { header: 'Precio Venta', width: '120px', show: !isProvider },
-      { header: 'Precio Costo', width: '120px', show: (role === 'admin') },
+      { header: 'Precio Costo', width: '120px', show: (role === 'admin') || isProvider },
       { header: 'Utilidad', width: '120px', show: (!isAssistant && !isProvider) },
       { header: 'Acciones', width: '140px', show: true }
     ];
@@ -2662,3 +2666,10 @@
   // Señal: inicialización terminada
   window.__appInitDone = true;
 })();
+      <div style="margin-top:12px;">
+        <h4 style="margin:8px 0;">Precios</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          ${showPrecioVenta ? `<div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;"><div style="font-weight:600;">Precio venta</div><div style="color:var(--c-text-light);">$ ${new Intl.NumberFormat('es-CO').format(Number(o.precioVenta || 0))}</div></div>` : ''}
+          ${showPrecioCosto ? `<div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;"><div style="font-weight:600;">Precio costo</div><div style="color:var(--c-text-light);">$ ${new Intl.NumberFormat('es-CO').format(Number(o.precioCosto || 0))}</div></div>` : ''}
+        </div>
+      </div>
