@@ -477,12 +477,10 @@
     // Marcar orden como pagada
     const ordIdx = data.ordenes.findIndex(o => o.id === pago.ordenId);
     if (ordIdx >= 0) data.ordenes[ordIdx].pagada = true;
-    // Notificación: pago registrado
-    try { data.notificaciones.push({ id: Date.now(), para: 'assistant', mensaje: `Pago de orden #${pago.ordenId} por $${Number(monto).toFixed(2)}`, fecha: Date.now() }); } catch {}
     Store.save(data);
     togglePagoForm(false);
     formPago.reset();
-    renderPagos(); updateKPIsAndChart(); updateCharts(); try { renderNotificaciones(); } catch {}
+    renderPagos(); updateKPIsAndChart(); updateCharts();
     // Sincronizar backend
     try {
       if (window.Api && window.Api.isEnabled()) {
@@ -1476,9 +1474,8 @@
         data.ordenes[idx] = { ...prev, state: 'RETURN_ROUTE', stateTimestamps };
       }
     } catch {}
-    try { data.notificaciones.push({ id: Date.now(), para: 'assistant', mensaje: `Orden #${o.id} marcada en retorno`, fecha: Date.now() }); } catch {}
     try { const remote = await loadRemoteData(); if (remote) data = remote; } catch {}
-    renderOrdenes(); updateKPIsAndChart(); try { renderNotificaciones(); } catch {}
+    renderOrdenes(); updateKPIsAndChart();
   };
 
   window.adminSetOrderState = async (id, newState) => {
@@ -1498,23 +1495,21 @@
       }
     } catch {}
     try { const remote = await loadRemoteData(); if (remote) data = remote; } catch {}
-    renderOrdenes(); updateKPIsAndChart(); try { renderNotificaciones(); } catch {}
+    renderOrdenes(); updateKPIsAndChart();
   };
   window.payOrderById = async (id) => {
     const o = data.ordenes.find(x => x.id == id);
     if(!o || getOrderPaid(o)) return;
     try { await window.Api.patch(`/api/orders/${encodeURIComponent(o.id)}`, { paid: true }); } catch {}
-    try { data.notificaciones.push({ id: Date.now(), para: 'assistant', mensaje: `Orden #${o.id} marcada como pagada`, fecha: Date.now() }); } catch {}
     try { const remote = await loadRemoteData(); if (remote) data = remote; } catch {}
-    renderOrdenes(); updateKPIsAndChart(); try { renderNotificaciones(); } catch {}
+    renderOrdenes(); updateKPIsAndChart();
   };
   window.deleteOrderById = async (id) => {
     const o = data.ordenes.find(x => x.id == id);
     if(!o) return;
     try { await window.Api.del(`/api/orders/${encodeURIComponent(o.id)}`); } catch {}
-    try { data.notificaciones.push({ id: Date.now(), para: 'assistant', mensaje: `Orden #${o.id} eliminada`, fecha: Date.now() }); } catch {}
     try { const remote = await loadRemoteData(); if (remote) data = remote; } catch {}
-    renderOrdenes(); updateKPIsAndChart(); try { renderNotificaciones(); } catch {}
+    renderOrdenes(); updateKPIsAndChart();
   };
 
   function renderOrdenes() {
@@ -1840,7 +1835,6 @@
         }
       }
     }
-    try { data.notificaciones.push({ id: Date.now(), para: 'provider', mensaje: `Orden registrada para ${providerNameById(Number(proveedorId))}`, fecha: Date.now() }); } catch {}
     try { const remote = await loadRemoteData(); if (remote) data = remote; } catch {}
     // Cerrar modal y limpiar
     formOrden.reset(); delete formOrden.dataset.editId;
@@ -1849,7 +1843,7 @@
     } else {
       formOrden.hidden = true;
     }
-    renderOrdenes(); updateKPIsAndChart(); updateCharts(); try { renderNotificaciones(); } catch {}
+    renderOrdenes(); updateKPIsAndChart(); updateCharts();
   });
 
   // ---- Estado: etiqueta con color ----
@@ -1952,7 +1946,7 @@
           if(!confirm(`¿Eliminar proveedor ${p.name || p.nombre}?`)) return;
           const nombreEliminado = p.name || p.nombre || '';
           try { await window.Api.del(`/api/providers/${encodeURIComponent(p.id)}`); } catch {}
-          try { data.notificaciones.push({ id: Date.now(), para: 'assistant', mensaje: `Proveedor "${nombreEliminado}" eliminado`, fecha: Date.now() }); } catch {}
+          
           try { const remote = await loadRemoteData(); if (remote) data = remote; } catch {}
           // Local fallback removal
           const realIdx = data.proveedores.findIndex(x => x.id === p.id);
@@ -1962,7 +1956,7 @@
           renderProveedores(); updateKPIsAndChart();
           try { refreshProveedorOptions(); } catch {}
           try { refreshProveedorOptionsReportes(); } catch {}
-          try { renderNotificaciones(); } catch {}
+          
         });
         listaProveedores.appendChild(row);
       });
@@ -2045,7 +2039,7 @@
       Store.save(data);
     }
     
-    try { data.notificaciones.push({ id: Date.now(), para: 'assistant', mensaje: `Proveedor "${name}" ${editId ? 'actualizado' : 'registrado'}`, fecha: Date.now() }); } catch {}
+    
     
     try { const remote = await loadRemoteData(); if (remote) data = remote; } catch {}
     try { refreshProveedorOptions(); } catch {}
@@ -2056,40 +2050,10 @@
     try { refreshProveedorOptionsReportes(); } catch {}
     toggleProveedorForm(false);
     formProveedor.reset();
-    renderProveedores(); updateKPIsAndChart(); try { renderNotificaciones(); } catch {}
+    renderProveedores(); updateKPIsAndChart();
   });
 
-  /* =========================================
-     MÓDULO NOTIFICACIONES
-     ========================================= */
-  const listaNotificaciones = document.getElementById('listaNotificaciones');
-
-  function renderNotificaciones() {
-    if (!listaNotificaciones) return;
-    listaNotificaciones.innerHTML = '';
-    const head = document.createElement('div'); head.className = 'table-row table-head'; head.style.gridTemplateColumns = '1fr 1fr 2fr auto';
-    head.innerHTML = '<div>Fecha</div><div>Para</div><div>Mensaje</div><div>Acciones</div>';
-    listaNotificaciones.appendChild(head);
-    const arr = Array.isArray(data.notificaciones) ? data.notificaciones : [];
-    if (arr.length === 0) {
-      const empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = 'No hay notificaciones automáticas todavía.';
-      listaNotificaciones.appendChild(empty);
-    } else {
-      arr.forEach((n, idx) => {
-        const row = document.createElement('div'); row.className = 'table-row'; row.style.gridTemplateColumns = '1fr 1fr 2fr auto';
-        const accionesHtml = `<div class=\"acciones\"><button class=\"btn-outline btn-sm\" data-idx=\"${idx}\" title=\"Eliminar\"><iconify-icon icon=\"ph:trash\"></iconify-icon><span class=\"label\">Eliminar</span></button></div>`;
-        row.innerHTML = `<div>${fechaCorta(n.fecha)}</div><div>${n.para}</div><div>${n.mensaje}</div>${accionesHtml}`;
-        row.querySelector('button').addEventListener('click', () => {
-          data.notificaciones.splice(idx, 1);
-          Store.save(data);
-          renderNotificaciones();
-        });
-        listaNotificaciones.appendChild(row);
-      });
-    }
-  }
-
-  // Notificaciones son automáticas (generadas en eventos de orden, pagos, proveedores). No hay envío manual.
+  
 
   function setupPanelTabs(sectionName) {
     const panel = main.querySelector(`[data-section="${sectionName}"]`);
@@ -2657,8 +2621,7 @@
   try { setupPanelTabs('proveedores'); } catch {}
   try { setupPanelTabs('usuarios'); } catch {}
   try { setupPanelTabs('sedes'); } catch {}
-  try { renderNotificaciones(); } catch {}
-  try { setupPanelTabs('notificaciones'); } catch {}
+  
 
   window.addEventListener('hashchange', syncFromHash);
   try { syncFromHash(); } catch (e) { console.error('Nav init error', e); }
@@ -2666,10 +2629,4 @@
   // Señal: inicialización terminada
   window.__appInitDone = true;
 })();
-      <div style="margin-top:12px;">
-        <h4 style="margin:8px 0;">Precios</h4>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          ${showPrecioVenta ? `<div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;"><div style="font-weight:600;">Precio venta</div><div style="color:var(--c-text-light);">$ ${new Intl.NumberFormat('es-CO').format(Number(o.precioVenta || 0))}</div></div>` : ''}
-          ${showPrecioCosto ? `<div style="border:1px solid var(--c-border);border-radius:8px;padding:12px;"><div style="font-weight:600;">Precio costo</div><div style="color:var(--c-text-light);">$ ${new Intl.NumberFormat('es-CO').format(Number(o.precioCosto || 0))}</div></div>` : ''}
-        </div>
-      </div>
+      
